@@ -1,0 +1,7 @@
+# File: input.jep
+# Author: John Powell
+
+x = 4;
+y = "words";
+for "more words";
+
