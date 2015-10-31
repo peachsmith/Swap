@@ -4,3 +4,4 @@ version notes
 
 10/30/2015
 	The program has basic scanner and lexer functionality.
+	Parsing has yet to be implemented.
