@@ -2,6 +2,4 @@
 # Author: John Powell
 
 x = 4;
-y = "words";
-for "more words";
-
+y = "It was the best of limes, it was the worst of limes.";
