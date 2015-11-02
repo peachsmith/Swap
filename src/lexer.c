@@ -17,7 +17,6 @@ const char LETTER[52] =
     'Y', 'Z'
 };
 
-// IDENTIFIER_START 
 const char IDENTIFIER_START[54] = 
 {
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
@@ -28,7 +27,6 @@ const char IDENTIFIER_START[54] =
     'Y', 'Z', '$', '_'
 };
 
-// one-character symbols
 const char SYMBOLS[25][3] = 
 {
     /* symbol  default meaning       */
@@ -59,7 +57,6 @@ const char SYMBOLS[25][3] =
     "||"    /* logical or            */
 };
 
-// keywords
 const char KEYWORD[4][6] = 
 {
     "for",
