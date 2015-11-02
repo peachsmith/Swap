@@ -29,28 +29,22 @@ const char IDENTIFIER_START[54] =
 };
 
 // one-character symbols
-const char SYMBOLS_1[13][2] = 
+const char SYMBOLS[25][3] = 
 {
-	/* symbol  default meaning */
-    "#",    /* comment start   */
-    "\"",   /* string start    */
-    ";",    /* statement end   */
-    "+",    /* addition        */
-    "-",    /* subtraction     */
-    "*",    /* multiplication  */
-    "/",    /* division        */
-    "=",    /* assignment      */
-    "!",    /* not             */
-    "<",    /* less than       */
-    ">",    /* greater than    */
-    "&",    /* bitwise and     */
-    "|"     /* bitwise or      */
-};
-
-// two-character symbols
-const char SYMBOLS_2[12][3] = 
-{
-	/* symbol    default meaning     */
+    /* symbol  default meaning       */
+    "#",    /* comment start         */
+    "\"",   /* string start          */
+    ";",    /* statement end         */
+    "+",    /* addition              */
+    "-",    /* subtraction           */
+    "*",    /* multiplication        */
+    "/",    /* division              */
+    "=",    /* assignment            */
+    "!",    /* not                   */
+    "<",    /* less than             */
+    ">",    /* greater than          */
+    "&",    /* bitwise and           */
+    "|",    /* bitwise or            */
     "==",   /* equal                 */
     "!=",   /* not equal             */
     "+=",   /* add                   */
@@ -62,7 +56,7 @@ const char SYMBOLS_2[12][3] =
     "<=",   /* less than or equal    */
     ">=",   /* greater than or equal */
     "&&",   /* logical and           */
-    "||",   /* logical or            */
+    "||"    /* logical or            */
 };
 
 // keywords
@@ -413,14 +407,9 @@ int IsIdentifier(char* characters)
 int IsSymbol(char* characters)
 {
     int i;
-    for(i = 0; i < 13; i++)
+    for(i = 0; i < 25; i++)
     {
-        if(!strcmp(characters, SYMBOLS_1[i]))
-            return 1;
-    }
-    for(i = 0; i < 12; i++)
-    {
-        if(!strcmp(characters, SYMBOLS_2[i]))
+        if(!strcmp(characters, SYMBOLS[i]))
             return 1;
     }
     return 0;
