@@ -27,7 +27,7 @@ const char IDENTIFIER_START[54] =
 	'Y', 'Z', '$', '_'
 };
 
-const char SYMBOLS[25][3] = 
+const char SYMBOLS[31][3] = 
 {
 	/* symbol  default meaning       */
 	"#",	/* comment start         */
@@ -54,7 +54,13 @@ const char SYMBOLS[25][3] =
 	"<=",   /* less than or equal    */
 	">=",   /* greater than or equal */
 	"&&",   /* logical and           */
-	"||"	/* logical or            */
+	"||",	/* logical or            */
+	"(",	/* left parenthesis      */
+	")",	/* right parenthesis     */
+	"{",	/* left brace            */
+	"}",	/* right brace           */
+	"[",	/* left square bracket   */
+	"]"		/* right square bracket  */
 };
 
 const char KEYWORD[4][6] = 
@@ -291,8 +297,6 @@ int CreateToken(jchar_t* characters, token_t* token)
 		(*token).type = "invalid";
 		return 0;
 	}
-
-	//(*token).value = malloc();
 
 	(*token).row = characters[0].row;
 	(*token).column = characters[0].column;
