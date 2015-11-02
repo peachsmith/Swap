@@ -29,38 +29,38 @@ const char IDENTIFIER_START[54] =
 
 const char SYMBOLS[31][3] = 
 {
-	/* symbol  default meaning       */
-	"#",	/* comment start         */
-	"\"",   /* string start          */
-	";",	/* statement end         */
-	"+",	/* addition              */
-	"-",	/* subtraction           */
-	"*",	/* multiplication        */
-	"/",	/* division              */
-	"=",	/* assignment            */
-	"!",	/* not                   */
-	"<",	/* less than             */
-	">",	/* greater than          */
-	"&",	/* bitwise and           */
-	"|",	/* bitwise or            */
-	"==",   /* equal                 */
-	"!=",   /* not equal             */
-	"+=",   /* add                   */
-	"-=",   /* subtract              */
-	"*=",   /* multiply              */
-	"/=",   /* divide                */
-	"++",   /* increment             */
-	"--",   /* decrement             */
-	"<=",   /* less than or equal    */
-	">=",   /* greater than or equal */
-	"&&",   /* logical and           */
-	"||",	/* logical or            */
-	"(",	/* left parenthesis      */
-	")",	/* right parenthesis     */
-	"{",	/* left brace            */
-	"}",	/* right brace           */
-	"[",	/* left square bracket   */
-	"]"		/* right square bracket  */
+//  symbol     default meaning
+	"#",	// comment start
+	"\"",   // string start
+	";",	// statement end
+	"+",	// addition
+	"-",	// subtraction
+	"*",	// multiplication
+	"/",	// division
+	"=",	// assignment
+	"!",	// not
+	"<",	// less than
+	">",	// greater than
+	"&",	// bitwise and
+	"|",	// bitwise or
+	"==",   // equal
+	"!=",   // not equal
+	"+=",   // add
+	"-=",   // subtract
+	"*=",   // multiply
+	"/=",   // divide
+	"++",   // increment
+	"--",   // decrement
+	"<=",   // less than or equal
+	">=",   // greater than or equal
+	"&&",   // logical and
+	"||",	// logical or
+	"(",	// left parenthesis
+	")",	// right parenthesis
+	"{",	// left brace
+	"}",	// right brace
+	"[",	// left square bracket
+	"]"		// right square bracket
 };
 
 const char KEYWORD[4][6] = 
