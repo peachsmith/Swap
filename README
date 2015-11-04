@@ -1,1 +1,4 @@
-A basic parser
+SWaP: Solution Without a Problem
+
+A basic parser for a custom language.
+It currently only has scanner and partial lexer functionality.
