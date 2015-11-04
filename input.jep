@@ -2,4 +2,9 @@
 # Author: John Powell
 
 x = 4;
-y = "It was the best of limes, it was the worst of limes.";
+x++;
+
+y = x + 5;
+y *= 2;
+
+z = "these are some words.";
