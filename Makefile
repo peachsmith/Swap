@@ -1,3 +1,3 @@
 SRC=src/main.c src/scanner.c src/lexer.c
 all:
-	gcc $(SRC) -o splat
+	gcc $(SRC) -o swap

@@ -101,7 +101,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 {
 	int created_tokens = 0;
 	(*tokens) = malloc(sizeof(token_t) * nmem);
-	jchar_t* characters = malloc(sizeof(jchar_t) * nmem);
+	jchar_t* characters = malloc(sizeof(jchar_t) * (nmem + 1));
 	jchar_t token_end;
 
 	token_end.char_data = '\0';
@@ -159,12 +159,9 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 					{
 						break;
 					}
-					else
-					{
-
-					}
 				}
 			}
+
 			else if(source[i].char_data == '+' 
 				|| source[i].char_data == '-'
 				|| source[i].char_data == '*'
@@ -196,13 +193,13 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 				{
 					if(in_string)
 					{
-						printf("string not properly enclosed.\n ");
+						printf("string not properly enclosed in quotes.\n ");
 						free(characters);
 						return 0;
 					}
 				}
 			}
-
+			
 			characters[ci++] = source[i++];
 		} // END token character collection loop
 
@@ -221,7 +218,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 				ci = 1;
 				if(CreateToken(characters, &((*tokens)[ti])))
 				{
-					(*tokens)[ti].value = malloc(sizeof(char) * ci);
+					(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 					int nti;
 					for(nti = 0; nti <= ci; nti++)
 					{
@@ -270,7 +267,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 
 						if(CreateToken(characters, &((*tokens)[ti])))
 						{
-							(*tokens)[ti].value = malloc(sizeof(char) * ci);
+							(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 							int nti;
 							for(nti = 0; nti <= ci; nti++)
 							{
@@ -292,7 +289,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 						ci = 2;
 						if(CreateToken(characters, &((*tokens)[ti])))
 						{
-							(*tokens)[ti].value = malloc(sizeof(char) * ci);
+							(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 							int nti;
 							for(nti = 0; nti <= ci; nti++)
 							{
@@ -313,7 +310,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 						ci = 1;
 						if(CreateToken(characters, &((*tokens)[ti])))
 						{
-							(*tokens)[ti].value = malloc(sizeof(char) * ci);
+							(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 							int nti;
 							for(nti = 0; nti <= ci; nti++)
 							{
@@ -331,7 +328,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 					ci = 1;
 					if(CreateToken(characters, &((*tokens)[ti])))
 					{
-						(*tokens)[ti].value = malloc(sizeof(char) * ci);
+						(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 						int nti;
 						for(nti = 0; nti <= ci; nti++)
 						{
@@ -354,7 +351,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 				ci = 1;
 				if(CreateToken(characters, &((*tokens)[ti])))
 				{
-					(*tokens)[ti].value = malloc(sizeof(char) * ci);
+					(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 					int nti;
 					for(nti = 0; nti <= ci; nti++)
 					{
@@ -369,18 +366,30 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 			characters[0] = token_end;
 			continue;
 		} // END create token when characters[0] is token_end
+
 		else if(source[i].char_data == '"')
 		{
 			if(characters[0].char_data != '"')
 			{
-				printf("encountered closing quotation mark without opening quotation mark\n");
-				printf("row: %d, column: %d\n",source[i].row, source[i].column );
-				free(characters);
-				return 0;
+				if(CreateToken(characters, &((*tokens)[ti])))
+				{
+					(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
+					int nti;
+					for(nti = 0; nti <= ci; nti++)
+					{
+						(*tokens)[ti].value[nti] = characters[nti].char_data;
+					}
+					created_tokens++;
+					ti++;
+				}
+				characters[0] = source[i];
+				ci = 1;
+				i++;
+				continue;
 			}
 			if(CreateToken(characters, &((*tokens)[ti])))
 			{
-				(*tokens)[ti].value = malloc(sizeof(char) * ci);
+				(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 				int nti;
 				for(nti = 0; nti <= ci; nti++)
 				{
@@ -395,10 +404,9 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 			continue;
 		}
 
-
 		if(CreateToken(characters, &((*tokens)[ti])))
 		{
-			(*tokens)[ti].value = malloc(sizeof(char) * ci);
+			(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 			int nti;
 			for(nti = 0; nti <= ci; nti++)
 			{
@@ -432,7 +440,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 			ci = 1;
 			if(CreateToken(characters, &((*tokens)[ti])))
 			{
-				(*tokens)[ti].value = malloc(sizeof(char) * ci);
+				(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 				int nti;
 				for(nti = 0; nti <= ci; nti++)
 				{
@@ -480,7 +488,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 
 					if(CreateToken(characters, &((*tokens)[ti])))
 					{
-						(*tokens)[ti].value = malloc(sizeof(char) * ci);
+						(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 						int nti;
 						for(nti = 0; nti <= ci; nti++)
 						{
@@ -503,7 +511,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 					ci = 2;
 					if(CreateToken(characters, &((*tokens)[ti])))
 					{
-						(*tokens)[ti].value = malloc(sizeof(char) * ci);
+						(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 						int nti;
 						for(nti = 0; nti <= ci; nti++)
 						{
@@ -524,7 +532,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 					ci = 1;
 					if(CreateToken(characters, &((*tokens)[ti])))
 					{
-						(*tokens)[ti].value = malloc(sizeof(char) * ci);
+						(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 						int nti;
 						for(nti = 0; nti <= ci; nti++)
 						{
@@ -542,7 +550,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 				ci = 1;
 				if(CreateToken(characters, &((*tokens)[ti])))
 				{
-					(*tokens)[ti].value = malloc(sizeof(char) * ci);
+					(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 					int nti;
 					for(nti = 0; nti <= ci; nti++)
 					{
@@ -565,7 +573,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 			ci = 1;
 			if(CreateToken(characters, &((*tokens)[ti])))
 			{
-				(*tokens)[ti].value = malloc(sizeof(char) * ci);
+				(*tokens)[ti].value = malloc(sizeof(char) * (ci + 1));
 				int nti;
 				for(nti = 0; nti <= ci; nti++)
 				{
@@ -581,6 +589,12 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 	} // END tokenization loop
 
 	free(characters);
+
+	if(in_string)
+	{
+		printf("string not properly enclosed in quotes.\n");
+		return 0;
+	}
 
 	return created_tokens;
 }
@@ -687,6 +701,7 @@ int IsString(char* characters)
 		}
 		i++;
 	}
+
 	return 1;
 }
 
