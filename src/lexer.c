@@ -58,7 +58,7 @@ const char SYMBOLS[41][4] =
 	">=",   // greater than or equal
 	"&=",   // bitwise and assignment
 	"|=",   // bitwise or assignment
-	"^=",    // bitwise exclusive or assignment
+	"^=",   // bitwise exclusive or assignment
 	"<<=",  // bit shift left assignment
 	">>=",  // bit shift right assignment
 	"++",   // increment
