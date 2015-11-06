@@ -1,9 +1,9 @@
 # File: input.jep
 # Author: John Powell
 
-x = 4;
-y = x << 2;
-while (x < y)
+x = 4;           # assignment
+y = "words";     # string 
+while (x < y)    # while loop
 {
-	x <<= 1;
+	x <<= 1;     # bit shift assignment
 }
