@@ -27,11 +27,13 @@ const char IDENTIFIER_START[54] =
 	'Y', 'Z', '$', '_'
 };
 
-const char SYMBOLS[31][3] = 
+const char SYMBOLS[39][4] = 
 {
 //  symbol     default meaning
 	"#",	// comment start
 	"\"",   // string start
+	",",    // separator
+	".",    // member access
 	";",	// statement end
 	"+",	// addition
 	"-",	// subtraction
@@ -43,16 +45,22 @@ const char SYMBOLS[31][3] =
 	">",	// greater than
 	"&",	// bitwise and
 	"|",	// bitwise or
+	"<<",   // bit shift left
+	">>",   // bit shift right
 	"==",   // equal
 	"!=",   // not equal
-	"+=",   // add
-	"-=",   // subtract
-	"*=",   // multiply
-	"/=",   // divide
-	"++",   // increment
-	"--",   // decrement
+	"+=",   // addition assignment
+	"-=",   // subtraction assignment
+	"*=",   // multiplication assignment
+	"/=",   // division assignment
 	"<=",   // less than or equal
 	">=",   // greater than or equal
+	"&=",   // bitwise and assignment
+	"|=",   // bitwise or assignment
+	"<<=",   // bit shift left assignment
+	">>=",   // bit shift right assignment
+	"++",   // increment
+	"--",   // decrement
 	"&&",   // logical and
 	"||",	// logical or
 	"(",	// left parenthesis
@@ -69,6 +77,16 @@ const char KEYWORD[4][6] =
 	"while",
 	"if",
 	"else"
+};
+
+const char PRIMITIVE[6][7] = 
+{
+	"int",
+	"char",
+	"bool",
+	"long",
+	"float",
+	"double"
 };
 
 // token types
@@ -152,6 +170,17 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 				|| source[i].char_data == '='
 				|| source[i].char_data == '&'
 				|| source[i].char_data == '|'
+				|| source[i].char_data == '^'
+				|| source[i].char_data == '<'
+				|| source[i].char_data == '>'
+				|| source[i].char_data == '('
+				|| source[i].char_data == ')'
+				|| source[i].char_data == '{'
+				|| source[i].char_data == '}'
+				|| source[i].char_data == '['
+				|| source[i].char_data == ']'
+				|| source[i].char_data == ','
+				|| source[i].char_data == '.'
 				|| source[i].char_data == ';')
 			{
 				if(!in_string)
@@ -181,7 +210,9 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 		// create token when characters[0] is token_end
 		if(characters[0].char_data == '\0')
 		{
-			if(source[i].char_data == ';')
+			if(source[i].char_data == ';' 
+				|| source[i].char_data == ','
+				|| source[i].char_data == '.')
 			{
 				characters[0] = source[i];
 				characters[1] = token_end;
@@ -198,233 +229,139 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 					ti++;
 				}
 			}
-			else if(source[i].char_data == '=')
+			else if(source[i].char_data == '+'
+				|| source[i].char_data == '-'
+				|| source[i].char_data == '*'
+				|| source[i].char_data == '/'
+				|| source[i].char_data == '&'
+				|| source[i].char_data == '|'
+				|| source[i].char_data == '^'
+				|| source[i].char_data == '<'
+				|| source[i].char_data == '>'
+				|| source[i].char_data == '=')
 			{
+				if(i < nmem)
+				{
+					if((source[i].char_data == '+' && source[i + 1].char_data == '+')
+						|| (source[i].char_data == '-' && source[i + 1].char_data == '-')
+						|| (source[i].char_data == '<' && source[i + 1].char_data == '<')
+						|| (source[i].char_data == '>' && source[i + 1].char_data == '>')
+						|| (source[i].char_data == '&' && source[i + 1].char_data == '&')
+						|| (source[i].char_data == '|' && source[i + 1].char_data == '|'))
+					{
+						characters[0] = source[i];
+						characters[1] = source[i + 1];
+						characters[2] = token_end;
+						ci = 2;
 
-				if(i < nmem)
-				{
-					if(source[i + 1].char_data == '=')
-					{
-						characters[0] = source[i];
-						characters[1] = source[i + 1];
-						characters[2] = token_end;
-						ci = 2;
-						if(CreateToken(characters, &((*tokens)[ti])))
+						//check for bit shift assignments <<= and >>=
+						if((i < nmem - 1) && 
+							(characters[1].char_data == '<' || characters[1].char_data == '>'))
 						{
-							(*tokens)[ti].value = malloc(sizeof(char) * ci);
-							int nti;
-							for(nti = 0; nti <= ci; nti++)
+							if(source[i + 2].char_data == '=')
 							{
-								(*tokens)[ti].value[nti] = characters[nti].char_data;
+								characters[2] = source[i + 2];
+								characters[3] = token_end;
+								ci = 3;
 							}
-							created_tokens++;
-							ti++;
 						}
-						ci = 0;
-						characters[ci] = token_end;
-						i += 2;
-						continue;
-					}
-					else
-					{
-						characters[0] = source[i];
-						characters[1] = token_end;
-						ci = 1;
-						if(CreateToken(characters, &((*tokens)[ti])))
-						{
-							(*tokens)[ti].value = malloc(sizeof(char) * ci);
-							int nti;
-							for(nti = 0; nti <= ci; nti++)
-							{
-								(*tokens)[ti].value[nti] = characters[nti].char_data;
-							}
-							created_tokens++;
-							ti++;
-						}
-					}
-				}
-			}
-			else if(source[i].char_data == '+')
-			{
-				if(CreateToken(characters, &((*tokens)[ti])))
-				{
-					(*tokens)[ti].value = malloc(sizeof(char) * ci);
-					int nti;
-					for(nti = 0; nti <= ci; nti++)
-					{
-						(*tokens)[ti].value[nti] = characters[nti].char_data;
-					}
-					created_tokens++;
-					ti++;
-				}
-				if(i < nmem)
-				{
-					if(source[i + 1].char_data == '+' || source[i + 1].char_data == '=')
-					{
-						characters[0] = source[i];
-						characters[1] = source[i + 1];
-						characters[2] = token_end;
-						ci = 2;
-						if(CreateToken(characters, &((*tokens)[ti])))
-						{
-							(*tokens)[ti].value = malloc(sizeof(char) * ci);
-							int nti;
-							for(nti = 0; nti <= ci; nti++)
-							{
-								(*tokens)[ti].value[nti] = characters[nti].char_data;
-							}
-							created_tokens++;
-							ti++;
-						}
-						ci = 0;
-						characters[ci] = token_end;
-						i += 2;
-						continue;
-					}
-					else
-					{
-						characters[0] = source[i];
-						characters[1] = token_end;
-						ci = 1;
-						if(CreateToken(characters, &((*tokens)[ti])))
-						{
-							(*tokens)[ti].value = malloc(sizeof(char) * ci);
-							int nti;
-							for(nti = 0; nti <= ci; nti++)
-							{
-								(*tokens)[ti].value[nti] = characters[nti].char_data;
-							}
-							created_tokens++;
-							ti++;
-						}
-					}
-				}
-				ci = 0;
-				characters[ci] = token_end;
-				i++;
-				continue;
-			}
-			else if(source[i].char_data == '-')
-			{
-				if(CreateToken(characters, &((*tokens)[ti])))
-				{
-					(*tokens)[ti].value = malloc(sizeof(char) * ci);
-					int nti;
-					for(nti = 0; nti <= ci; nti++)
-					{
-						(*tokens)[ti].value[nti] = characters[nti].char_data;
-					}
-					created_tokens++;
-					ti++;
-				}
-				if(i < nmem)
-				{
-					if(source[i + 1].char_data == '-' || source[i + 1].char_data == '=')
-					{
-						characters[0] = source[i];
-						characters[1] = source[i + 1];
-						characters[2] = token_end;
-						ci = 2;
-						if(CreateToken(characters, &((*tokens)[ti])))
-						{
-							(*tokens)[ti].value = malloc(sizeof(char) * ci);
-							int nti;
-							for(nti = 0; nti <= ci; nti++)
-							{
-								(*tokens)[ti].value[nti] = characters[nti].char_data;
-							}
-							created_tokens++;
-							ti++;
-						}
-						ci = 0;
-						characters[ci] = token_end;
-						i += 2;
-						continue;
-					}
-					else
-					{
-						characters[0] = source[i];
-						characters[1] = token_end;
-						ci = 1;
-						if(CreateToken(characters, &((*tokens)[ti])))
-						{
-							(*tokens)[ti].value = malloc(sizeof(char) * ci);
-							int nti;
-							for(nti = 0; nti <= ci; nti++)
-							{
-								(*tokens)[ti].value[nti] = characters[nti].char_data;
-							}
-							created_tokens++;
-							ti++;
-						}
-					}
-				}
-				ci = 0;
-				characters[ci] = token_end;
-				i++;
-				continue;
-			}
-			else if(source[i].char_data == '*' || source[i].char_data == '/')
-			{
-				if(CreateToken(characters, &((*tokens)[ti])))
-				{
-					(*tokens)[ti].value = malloc(sizeof(char) * ci);
-					int nti;
-					for(nti = 0; nti <= ci; nti++)
-					{
-						(*tokens)[ti].value[nti] = characters[nti].char_data;
-					}
-					created_tokens++;
-					ti++;
-				}
-				if(i < nmem)
-				{
-					if(source[i + 1].char_data == '=')
-					{
-						characters[0] = source[i];
-						characters[1] = source[i + 1];
-						characters[2] = token_end;
-						ci = 2;
-						if(CreateToken(characters, &((*tokens)[ti])))
-						{
-							(*tokens)[ti].value = malloc(sizeof(char) * ci);
-							int nti;
-							for(nti = 0; nti <= ci; nti++)
-							{
-								(*tokens)[ti].value[nti] = characters[nti].char_data;
-							}
-							created_tokens++;
-							ti++;
-						}
-						ci = 0;
-						characters[ci] = token_end;
-						i += 2;
-						continue;
-					}
-					else
-					{
-						characters[0] = source[i];
-						characters[1] = token_end;
-						ci = 1;
-						if(CreateToken(characters, &((*tokens)[ti])))
-						{
-							(*tokens)[ti].value = malloc(sizeof(char) * ci);
-							int nti;
-							for(nti = 0; nti <= ci; nti++)
-							{
-								(*tokens)[ti].value[nti] = characters[nti].char_data;
-							}
-							created_tokens++;
-							ti++;
-						}
-					}
-				}
-				ci = 0;
-				characters[ci] = token_end;
-				i++;
-				continue;
-			}
 
+						if(CreateToken(characters, &((*tokens)[ti])))
+						{
+							(*tokens)[ti].value = malloc(sizeof(char) * ci);
+							int nti;
+							for(nti = 0; nti <= ci; nti++)
+							{
+								(*tokens)[ti].value[nti] = characters[nti].char_data;
+							}
+							created_tokens++;
+							ti++;
+						}
+						characters[0] = token_end;
+						i += ci;
+						ci = 0;
+						continue;
+					}
+					else if(source[i + 1].char_data == '=')
+					{
+						characters[0] = source[i];
+						characters[1] = source[i + 1];
+						characters[2] = token_end;
+						ci = 2;
+						if(CreateToken(characters, &((*tokens)[ti])))
+						{
+							(*tokens)[ti].value = malloc(sizeof(char) * ci);
+							int nti;
+							for(nti = 0; nti <= ci; nti++)
+							{
+								(*tokens)[ti].value[nti] = characters[nti].char_data;
+							}
+							created_tokens++;
+							ti++;
+						}
+						ci = 0;
+						characters[ci] = token_end;
+						i += 2;
+						continue;
+					}
+					else
+					{
+						characters[0] = source[i];
+						characters[1] = token_end;
+						ci = 1;
+						if(CreateToken(characters, &((*tokens)[ti])))
+						{
+							(*tokens)[ti].value = malloc(sizeof(char) * ci);
+							int nti;
+							for(nti = 0; nti <= ci; nti++)
+							{
+								(*tokens)[ti].value[nti] = characters[nti].char_data;
+							}
+							created_tokens++;
+							ti++;
+						}
+					}
+				}
+				else
+				{
+					characters[0] = source[i];
+					characters[1] = token_end;
+					ci = 1;
+					if(CreateToken(characters, &((*tokens)[ti])))
+					{
+						(*tokens)[ti].value = malloc(sizeof(char) * ci);
+						int nti;
+						for(nti = 0; nti <= ci; nti++)
+						{
+							(*tokens)[ti].value[nti] = characters[nti].char_data;
+						}
+						created_tokens++;
+						ti++;
+					}
+				}
+			}
+			else if(source[i].char_data == '('
+				|| source[i].char_data == ')'
+				|| source[i].char_data == '{'
+				|| source[i].char_data == '}'
+				|| source[i].char_data == '['
+				|| source[i].char_data == ']')
+			{
+				characters[0] = source[i];
+				characters[1] = token_end;
+				ci = 1;
+				if(CreateToken(characters, &((*tokens)[ti])))
+				{
+					(*tokens)[ti].value = malloc(sizeof(char) * ci);
+					int nti;
+					for(nti = 0; nti <= ci; nti++)
+					{
+						(*tokens)[ti].value[nti] = characters[nti].char_data;
+					}
+					created_tokens++;
+					ti++;
+				}
+			}
 			i++;
 			ci = 0;
 			characters[0] = token_end;
@@ -470,14 +407,23 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 		}
 		else
 		{
-			printf("invalid token: %s at row %i, column %i\n", characters, 
+			const problem_size = ci;
+			char problem_token[problem_size];
+			int nti;
+			for(nti = 0; nti <= problem_size; nti++)
+			{
+				problem_token[nti] = characters[nti].char_data;
+			}
+			printf("invalid token: %s at row %i, column %i\n", problem_token, 
 				characters[0].row, characters[0].column);
 			free(characters);
 			return 0;
 		}
 
 		// handle symbols right after identifiers
-		if(source[i].char_data == ';')
+		if(source[i].char_data == ';' 
+			|| source[i].char_data == ','
+			|| source[i].char_data == '.')
 		{
 			characters[0] = source[i];
 			characters[1] = token_end;
@@ -494,17 +440,42 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 				ti++;
 			}
 		}
-		else if(source[i].char_data == '=')
+		else if(source[i].char_data == '+'
+			|| source[i].char_data == '-'
+			|| source[i].char_data == '*'
+			|| source[i].char_data == '/'
+			|| source[i].char_data == '&'
+			|| source[i].char_data == '|'
+			|| source[i].char_data == '^'
+			|| source[i].char_data == '>'
+			|| source[i].char_data == '<'
+			|| source[i].char_data == '=')
 		{
-			
 			if(i < nmem)
 			{
-				if(source[i + 1].char_data == '=')
+				if((source[i].char_data == '+' && source[i + 1].char_data == '+')
+					|| (source[i].char_data == '-' && source[i + 1].char_data == '-')
+					|| (source[i].char_data == '<' && source[i + 1].char_data == '<')
+					|| (source[i].char_data == '>' && source[i + 1].char_data == '>')
+					|| (source[i].char_data == '&' && source[i + 1].char_data == '&')
+					|| (source[i].char_data == '|' && source[i + 1].char_data == '|'))
 				{
 					characters[0] = source[i];
 					characters[1] = source[i + 1];
 					characters[2] = token_end;
 					ci = 2;
+					//check for bit shift assignments <<= and >>=
+					if((i < nmem - 1) && 
+						(characters[1].char_data == '<' || characters[1].char_data == '>'))
+					{
+						if(source[i + 2].char_data == '=')
+						{
+							characters[2] = source[i + 2];
+							characters[3] = token_end;
+							ci = 3;
+						}
+					}
+
 					if(CreateToken(characters, &((*tokens)[ti])))
 					{
 						(*tokens)[ti].value = malloc(sizeof(char) * ci);
@@ -516,97 +487,13 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 						created_tokens++;
 						ti++;
 					}
+					
+					characters[0] = token_end;
+					i += ci;
 					ci = 0;
-					characters[ci] = token_end;
-					i += 2;
 					continue;
 				}
-				else
-				{
-					characters[0] = source[i];
-					characters[1] = token_end;
-					ci = 1;
-					if(CreateToken(characters, &((*tokens)[ti])))
-					{
-						(*tokens)[ti].value = malloc(sizeof(char) * ci);
-						int nti;
-						for(nti = 0; nti <= ci; nti++)
-						{
-							(*tokens)[ti].value[nti] = characters[nti].char_data;
-						}
-						created_tokens++;
-						ti++;
-					}
-				}
-			}
-		}
-		else if(source[i].char_data == '+')
-		{
-			if(i < nmem)
-			{
-				if(source[i + 1].char_data == '+' || source[i + 1].char_data == '=')
-				{
-					characters[0] = source[i];
-					characters[1] = source[i + 1];
-					characters[2] = token_end;
-					ci = 2;
-					if(CreateToken(characters, &((*tokens)[ti])))
-					{
-						(*tokens)[ti].value = malloc(sizeof(char) * ci);
-						int nti;
-						for(nti = 0; nti <= ci; nti++)
-						{
-							(*tokens)[ti].value[nti] = characters[nti].char_data;
-						}
-						created_tokens++;
-						ti++;
-					}
-					ci = 0;
-					characters[ci] = token_end;
-					i += 2;
-					continue;
-				}
-				else
-				{
-					characters[0] = source[i];
-					characters[1] = token_end;
-					ci = 1;
-					if(CreateToken(characters, &((*tokens)[ti])))
-					{
-						(*tokens)[ti].value = malloc(sizeof(char) * ci);
-						int nti;
-						for(nti = 0; nti <= ci; nti++)
-						{
-							(*tokens)[ti].value[nti] = characters[nti].char_data;
-						}
-						created_tokens++;
-						ti++;
-					}
-				}
-			}
-			else
-			{
-				characters[0] = source[i];
-				characters[1] = token_end;
-				ci = 1;
-				if(CreateToken(characters, &((*tokens)[ti])))
-				{
-					(*tokens)[ti].value = malloc(sizeof(char) * ci);
-					int nti;
-					for(nti = 0; nti <= ci; nti++)
-					{
-						(*tokens)[ti].value[nti] = characters[nti].char_data;
-					}
-					created_tokens++;
-					ti++;
-				}
-			}
-		}
-		else if(source[i].char_data == '-')
-		{
-			if(i < nmem)
-			{
-				if(source[i + 1].char_data == '-' || source[i + 1].char_data == '=')
+				else if(source[i + 1].char_data == '=')
 				{
 					characters[0] = source[i];
 					characters[1] = source[i + 1];
@@ -664,8 +551,16 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 				}
 			}
 		}
-		else if(source[i].char_data == '*' || source[i].char_data == '/')
+		else if(source[i].char_data == '('
+			|| source[i].char_data == ')'
+			|| source[i].char_data == '{'
+			|| source[i].char_data == '}'
+			|| source[i].char_data == '['
+			|| source[i].char_data == ']')
 		{
+			characters[0] = source[i];
+			characters[1] = token_end;
+			ci = 1;
 			if(CreateToken(characters, &((*tokens)[ti])))
 			{
 				(*tokens)[ti].value = malloc(sizeof(char) * ci);
@@ -677,52 +572,6 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 				created_tokens++;
 				ti++;
 			}
-			if(i < nmem)
-			{
-				if(source[i + 1].char_data == '=')
-				{
-					characters[0] = source[i];
-					characters[1] = source[i + 1];
-					characters[2] = token_end;
-					ci = 2;
-					if(CreateToken(characters, &((*tokens)[ti])))
-					{
-						(*tokens)[ti].value = malloc(sizeof(char) * ci);
-						int nti;
-						for(nti = 0; nti <= ci; nti++)
-						{
-							(*tokens)[ti].value[nti] = characters[nti].char_data;
-						}
-						created_tokens++;
-						ti++;
-					}
-					ci = 0;
-					characters[ci] = token_end;
-					i += 2;
-					continue;
-				}
-				else
-				{
-					characters[0] = source[i];
-					characters[1] = token_end;
-					ci = 1;
-					if(CreateToken(characters, &((*tokens)[ti])))
-					{
-						(*tokens)[ti].value = malloc(sizeof(char) * ci);
-						int nti;
-						for(nti = 0; nti <= ci; nti++)
-						{
-							(*tokens)[ti].value[nti] = characters[nti].char_data;
-						}
-						created_tokens++;
-						ti++;
-					}
-				}
-			}
-			ci = 0;
-			characters[ci] = token_end;
-			i++;
-			continue;
 		}
 		i++;
 		ci = 0;
@@ -875,9 +724,21 @@ int IsIdentifier(char* characters)
 int IsSymbol(char* characters)
 {
 	int i;
-	for(i = 0; i < 25; i++)
+	for(i = 0; i < 39; i++)
 	{
 		if(!strcmp(characters, SYMBOLS[i]))
+			return 1;
+	}
+	return 0;
+}
+
+// not currently used
+int IsPrimitive(char* characters)
+{
+	int i;
+	for(i = 0; i < 6; i++)
+	{
+		if(!strcmp(characters, PRIMITIVE[i]))
 			return 1;
 	}
 	return 0;

@@ -47,6 +47,8 @@ extern const char SYMBOLS_2[12][3];
 
 extern const char KEYWORD[4][6];
 
+extern const char PRIMITIVE[6][7];
+
 extern const char TOKEN_IDENTIFIER[11];
 extern const char TOKEN_SYMBOL[7];
 extern const char TOKEN_NUMBER[7];
@@ -70,5 +72,8 @@ int IsString(char* characters);
 int IsKeyword(char* characters);
 int IsIdentifier(char* characters);
 int IsSymbol(char* characters);
+
+// not currently used
+int IsPrimitive(char* characters);
 
 #endif

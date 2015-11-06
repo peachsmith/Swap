@@ -2,9 +2,8 @@
 # Author: John Powell
 
 x = 4;
-x++;
-
-y = x + 5;
-y *= 2;
-
-z = "these are some words.";
+y = x << 2;
+while (x < y)
+{
+	x <<= 1;
+}

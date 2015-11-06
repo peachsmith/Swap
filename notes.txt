@@ -19,3 +19,27 @@
 	*=
 	/=
 	==
+
+11/6/2015
+	Added tokenization functionality for the following symbols:
+	.
+	,
+	<
+	>
+	<<
+	>>
+	<<=
+	>>=
+	&
+	&&
+	&=
+	|
+	||
+	|=
+	(
+	)
+	{
+	}
+	[
+	]
+
