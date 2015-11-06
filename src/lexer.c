@@ -209,6 +209,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 		// create token when characters[0] is token_end
 		if(characters[0].char_data == '\0')
 		{
+			/* single-character symbols */
 			if(source[i].char_data == ';' 
 				|| source[i].char_data == ','
 				|| source[i].char_data == '.')
@@ -228,6 +229,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 					ti++;
 				}
 			}
+			/* potential multi-character symbols */
 			else if(source[i].char_data == '+'
 				|| source[i].char_data == '-'
 				|| source[i].char_data == '*'
@@ -339,6 +341,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 					}
 				}
 			}
+			/* brackets */
 			else if(source[i].char_data == '('
 				|| source[i].char_data == ')'
 				|| source[i].char_data == '{'
@@ -431,6 +434,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 		}
 
 		// handle symbols right after identifiers
+		/* single-character symbols */
 		if(source[i].char_data == ';' 
 			|| source[i].char_data == ','
 			|| source[i].char_data == '.')
@@ -450,6 +454,8 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 				ti++;
 			}
 		}
+
+		/* potential multi-character symbols */
 		else if(source[i].char_data == '+'
 			|| source[i].char_data == '-'
 			|| source[i].char_data == '*'
@@ -561,6 +567,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 				}
 			}
 		}
+		/* brackets */
 		else if(source[i].char_data == '('
 			|| source[i].char_data == ')'
 			|| source[i].char_data == '{'
