@@ -27,7 +27,7 @@ const char IDENTIFIER_START[54] =
 	'Y', 'Z', '$', '_'
 };
 
-const char SYMBOLS[39][4] = 
+const char SYMBOLS[41][4] = 
 {
 //  symbol     default meaning
 	"#",	// comment start
@@ -45,6 +45,7 @@ const char SYMBOLS[39][4] =
 	">",	// greater than
 	"&",	// bitwise and
 	"|",	// bitwise or
+	"^",    // bitwise exclusive or
 	"<<",   // bit shift left
 	">>",   // bit shift right
 	"==",   // equal
@@ -57,8 +58,9 @@ const char SYMBOLS[39][4] =
 	">=",   // greater than or equal
 	"&=",   // bitwise and assignment
 	"|=",   // bitwise or assignment
-	"<<=",   // bit shift left assignment
-	">>=",   // bit shift right assignment
+	"^=",    // bitwise exclusive or assignment
+	"<<=",  // bit shift left assignment
+	">>=",  // bit shift right assignment
 	"++",   // increment
 	"--",   // decrement
 	"&&",   // logical and
@@ -724,7 +726,7 @@ int IsIdentifier(char* characters)
 int IsSymbol(char* characters)
 {
 	int i;
-	for(i = 0; i < 39; i++)
+	for(i = 0; i < 41; i++)
 	{
 		if(!strcmp(characters, SYMBOLS[i]))
 			return 1;
