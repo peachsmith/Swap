@@ -1,8 +1,10 @@
 # File: input.jep
 # Author: John Powell
 
+write("Hello, World!\n");
+
 x = 4;
-y = "words{<<=.,?";
+
 while(x < 24)
 {
 	x <<= 1;
