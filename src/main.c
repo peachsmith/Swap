@@ -13,6 +13,45 @@ typedef struct Arguments
 
 int CollectArguments(int argc, char** argv, args_t* args);
 
+token_t* next;
+
+int Expect(const char* expected)
+{
+	if(!strcmp(expected, "number") || !strcmp(expected, "identifier"))
+	{
+		if(!strcmp((*next++).type, expected))
+			return 1;
+		else
+			return 0;
+	}
+
+	if(!strcmp((*next++).value, expected))
+		return 1;
+	else 
+		return 0;
+}
+
+int E1() { return Term(); }
+int E2() { return Term() && Expect("+") && Expression(); }
+
+int Expression() 
+{ 
+	token_t *save = next; 
+	return (next = save, E1()) || (next = save, E2()); 
+}
+
+int T1() { return Expect("number"); }
+int T2() { return Expect("number") && Expect("*") && Term(); }
+int T3() { return Expect("(") && Expression() && Expect(")"); }
+
+int Term() 
+{
+	token_t* save = next;
+	return (next = save, T1()) 
+	|| (next = save, T2())
+	|| (next = save, T3());
+}
+
 int main(int argc,char** argv)
 {
 	char version[15] = "1.0.0";
@@ -47,14 +86,32 @@ int main(int argc,char** argv)
 		
 		token_count = Tokenize(source, &tokens, character_count);
 		
-		if(args.flag_v)
+		if(token_count)
 		{
-			int ti;
-			for(ti = 0; ti < token_count; ti++)
+			/* get the first token */
+			next = &tokens[0];
+
+			if(Expression())
 			{
-				printf("%-*s  %s\n", 12, tokens[ti].type, tokens[ti].value);
+				printf("found a valid expression!\n");
+			}
+			else
+			{
+				printf("did not find any valid expressions.\n");
+			}
+
+			if(args.flag_v)
+			{
+				int ti;
+				token_t* token = &tokens[0];
+				for(ti = 0; ti < token_count; ti++)
+				{
+					printf("%-*s  %s\n", 12, (*token).type, (*token).value);
+					*token++;
+				}
 			}
 		}
+
 	}
 	/*
 	if(args.flag_v)

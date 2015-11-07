@@ -1,11 +1,6 @@
-# File: input.jep
-# Author: John Powell
+#
+# E -> T | T + E
+# T -> int | int * T | (E)
+#
 
-write("Hello, World!\n");
-
-x = 4;
-
-while(x < 24)
-{
-	x <<= 1;
-}
+(5*4)
