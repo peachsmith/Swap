@@ -1,6 +1,17 @@
 #
+# --------------------------
+# This grammar is not ok for LL(k)
 # E -> T | T + E
-# T -> int | int * T | (E)
+# T -> number | number * T | (E)
+# --------------------------
+#
+# --------------------------
+# ε basically means empty
+#
+# E -> T X
+# X -> + E | ε
+# T -> number Y | (E)
+# Y -> * T | ε
 #
 
 (5*4)
