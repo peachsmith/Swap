@@ -251,7 +251,8 @@ void Statement()
 	{
 		Expression();
 		Expect(")");
-		Expression();
+		if(strcmp((*next).value,";"))
+			Expression();
 	}
 	if(Accept("identifier") || Accept("number"))
 	{
