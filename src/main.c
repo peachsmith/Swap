@@ -94,8 +94,10 @@ int main(int argc,char** argv)
 	free(source);
 
 	int token_index;
-	for(token_index = 0; token_index < token_count; token_index++)
+	for(token_index = 0; token_index < token_count - 1; token_index++)
+	{
 		free(tokens[token_index].value);
+	}
 
 	free(tokens);
 
@@ -245,6 +247,12 @@ void Condition()
 
 void Statement()
 {
+	if(Accept("("))
+	{
+		Expression();
+		Expect(")");
+		Expression();
+	}
 	if(Accept("identifier") || Accept("number"))
 	{
 		if(Accept("=") || Accept("+=") || Accept("-=") || Accept("*=")
