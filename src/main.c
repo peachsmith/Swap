@@ -15,42 +15,14 @@ int CollectArguments(int argc, char** argv, args_t* args);
 
 token_t* next;
 
-int Expect(const char* expected)
-{
-	if(!strcmp(expected, "number") || !strcmp(expected, "identifier"))
-	{
-		if(!strcmp((*next++).type, expected))
-			return 1;
-		else
-			return 0;
-	}
-
-	if(!strcmp((*next++).value, expected))
-		return 1;
-	else 
-		return 0;
-}
-
-int E1() { return Term(); }
-int E2() { return Term() && Expect("+") && Expression(); }
-
-int Expression() 
-{ 
-	token_t *save = next; 
-	return (next = save, E1()) || (next = save, E2()); 
-}
-
-int T1() { return Expect("number"); }
-int T2() { return Expect("number") && Expect("*") && Term(); }
-int T3() { return Expect("(") && Expression() && Expect(")"); }
-
-int Term() 
-{
-	token_t* save = next;
-	return (next = save, T1()) 
-	|| (next = save, T2())
-	|| (next = save, T3());
-}
+void NextToken();
+int Accept(const char* expected);
+int Expect(const char* expected);
+void Factor();
+void Term();
+void Expression();
+void Condition();
+void Statement();
 
 int main(int argc,char** argv)
 {
@@ -91,14 +63,7 @@ int main(int argc,char** argv)
 			/* get the first token */
 			next = &tokens[0];
 
-			if(Expression())
-			{
-				printf("found a valid expression!\n");
-			}
-			else
-			{
-				printf("did not find any valid expressions.\n");
-			}
+			Statement();
 
 			if(args.flag_v)
 			{
@@ -182,4 +147,125 @@ int CollectArguments(int argc, char** argv, args_t* args)
 		}
 	}
 	return 1;
+}
+
+void NextToken()
+{
+	(*next++);
+}
+
+int Accept(const char* expected)
+{
+	printf("expected %s found %s\n",expected, (*next).value );
+	if(!strcmp(expected, "number") || !strcmp(expected, "identifier"))
+	{
+		if(!strcmp((*next).type, expected))
+		{
+			//printf("%s", (*next).value);
+			NextToken();
+			return 1;
+		}
+		else
+			return 0;
+	}
+
+	if(!strcmp((*next).value, expected))
+	{
+		//printf("%s", (*next).value);
+		NextToken();
+		return 1;
+	}
+	else 
+		return 0;
+}
+
+int Expect(const char* expected)
+{
+	if(Accept(expected))
+		return 1;
+	else
+		printf("unexpected token. expected: %s  found %s\n", expected, (*next).value);
+	return 0;
+}
+
+void Factor()
+{
+	if(Accept("identifier"))
+	{
+
+	}
+	else if(Accept("number"))
+	{
+
+	}
+	else if(Accept("("))
+	{
+		Expression();
+		Expect(")");
+	}
+	else
+	{
+		printf("syntax error.\n");
+		NextToken();
+	}
+}
+
+void Term()
+{
+	Accept("*");
+	Accept("/");
+	Factor();
+	while (Accept("*") || Accept("/"))
+		Factor();
+}
+
+void Expression()
+{
+	Accept("+");
+	Accept("-");
+	Term();
+	while(Accept("+") || Accept("-"))
+		Term();
+}
+
+void Condition()
+{
+	Expression();
+	if(Accept("==") || Accept("!=") || Accept("<") || Accept(">")
+		|| Accept("<=") || Accept(">="))
+	{
+		Expression();
+	}
+	else
+	{
+		printf("Condition: invalid operator\n");
+		NextToken();
+	}
+}
+
+void Statement()
+{
+	if(Accept("identifier") || Accept("number"))
+	{
+		if(Accept("=") || Accept("+=") || Accept("-=") || Accept("*=")
+			|| Accept("/=") || Accept("<<=") || Accept(">>=")) /* assignment */
+		{
+			Expression();
+		}
+		else if(Accept(";"))
+		{
+			printf("found a declaration\n");
+			return;
+		}
+		else
+		{
+			Expression();
+		}
+	}
+	if(Expect(";"))
+	{
+		printf("\nfound a valid statement.\n");
+	}
+	else
+		printf("\ncould not find a valid statement.\n");
 }

@@ -100,7 +100,7 @@ const char TOKEN_STRING[7] = "string";
 int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 {
 	int created_tokens = 0;
-	(*tokens) = malloc(sizeof(token_t) * nmem);
+	(*tokens) = malloc(sizeof(token_t) * (nmem + 5));
 	jchar_t* characters = malloc(sizeof(jchar_t) * (nmem + 1));
 	jchar_t token_end;
 
@@ -602,6 +602,10 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 		printf("string not properly enclosed in quotes.\n");
 		return 0;
 	}
+
+	(*tokens)[ti].type = "symbol";
+	(*tokens)[ti].value = "[end]";
+	created_tokens++;
 
 	return created_tokens;
 }

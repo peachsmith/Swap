@@ -45,3 +45,6 @@
 	^
 	^=
 
+11/9/2015
+	The application can now parse basic arithmetic. Parentheses are not
+	yet supported.
