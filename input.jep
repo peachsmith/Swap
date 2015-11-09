@@ -1,17 +1,15 @@
-#
 # --------------------------
-# This grammar is not ok for LL(k)
-# E -> T | T + E
-# T -> number | number * T | (E)
+# GRAMMAR
+#
+# F -> identifier | number | (E)
+#
+# T -> F | "*" F | "/" F | "*" F "*" F 
+#        | "*" F "/" F | "/" F "/" F | "/" F "*" F
+#
+# E -> T | "+" T | "-" T | "+" T "+" T 
+#        | "+" T "-" T | "-" T "+" T | "-" T "-" T
+#
+# S -> E ";"
 # --------------------------
-#
-# --------------------------
-# ε basically means empty
-#
-# E -> T X
-# X -> + E | ε
-# T -> number Y | (E)
-# Y -> * T | ε
-#
 
 x - 5 + 4 * y / 2;
