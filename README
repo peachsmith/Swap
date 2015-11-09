@@ -1,4 +1,5 @@
 SWaP: Solution Without a Problem
 
 A basic parser for a custom language.
-It currently only has scanner and partial lexer functionality.
+Scanner and Lexer functionality are complete.
+Parsing is currently under development.
