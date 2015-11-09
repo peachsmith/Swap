@@ -46,5 +46,5 @@
 	^=
 
 11/9/2015
-	The application can now parse basic arithmetic. Parentheses are not
-	yet supported.
+	The application can now parse basic arithmetic. Parentheses are
+	supported, but the first token cannot yet be a parenthesis.
