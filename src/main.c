@@ -21,7 +21,6 @@ int Expect(const char* expected);
 void Factor();
 void Term();
 void Expression();
-void Condition();
 void Statement();
 
 int main(int argc,char** argv)
@@ -214,8 +213,7 @@ void Factor()
 
 void Term()
 {
-	Accept("*");
-	Accept("/");
+	if(Accept("*") || Accept("/"));
 	Factor();
 	while (Accept("*") || Accept("/"))
 		Factor();
@@ -223,26 +221,10 @@ void Term()
 
 void Expression()
 {
-	Accept("+");
-	Accept("-");
+	if(Accept("+") || Accept("-"));
 	Term();
 	while(Accept("+") || Accept("-"))
 		Term();
-}
-
-void Condition()
-{
-	Expression();
-	if(Accept("==") || Accept("!=") || Accept("<") || Accept(">")
-		|| Accept("<=") || Accept(">="))
-	{
-		Expression();
-	}
-	else
-	{
-		printf("Condition: invalid operator\n");
-		NextToken();
-	}
 }
 
 void Statement()
