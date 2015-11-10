@@ -206,25 +206,55 @@ void Factor()
 	}
 	else
 	{
-		printf("syntax error.\n");
+		printf(" $$$ syntax error $$$\n");
 		NextToken();
 	}
 }
 
 void Term()
 {
-	if(Accept("*") || Accept("/"));
+	if(Accept("*") || Accept("/"))
+	{
+		if(Accept("+") || Accept("-") || Accept("*") || Accept("/"))
+		{
+			printf(" *** syntax error ***\n");
+		}
+	}
 	Factor();
 	while (Accept("*") || Accept("/"))
+	{
+		if(Accept("+") || Accept("-"))
+		{
+			if(Accept("+") || Accept("-") || Accept("*") || Accept("/"))
+			{
+				printf(" *** syntax error ***\n");
+			}
+		}
 		Factor();
+	}
 }
 
 void Expression()
 {
-	if(Accept("+") || Accept("-"));
+	if(Accept("+") || Accept("-"))
+	{
+		if(Accept("+") || Accept("-") || Accept("*") || Accept("/"))
+		{
+			printf(" *** syntax error ***\n");
+		}
+	}
 	Term();
 	while(Accept("+") || Accept("-"))
+	{
+		if(Accept("+") || Accept("-"))
+		{
+			if(Accept("+") || Accept("-") || Accept("*") || Accept("/"))
+			{
+				printf(" *** syntax error ***\n");
+			}
+		}
 		Term();
+	}
 }
 
 void Statement()
