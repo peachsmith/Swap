@@ -167,6 +167,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 				|| source[i].char_data == '*'
 				|| source[i].char_data == '/'
 				|| source[i].char_data == '='
+				|| source[i].char_data == '!'
 				|| source[i].char_data == '&'
 				|| source[i].char_data == '|'
 				|| source[i].char_data == '^'
@@ -239,7 +240,8 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 				|| source[i].char_data == '^'
 				|| source[i].char_data == '<'
 				|| source[i].char_data == '>'
-				|| source[i].char_data == '=')
+				|| source[i].char_data == '='
+				|| source[i].char_data == '!')
 			{
 				if(i < nmem)
 				{
@@ -465,7 +467,8 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 			|| source[i].char_data == '^'
 			|| source[i].char_data == '>'
 			|| source[i].char_data == '<'
-			|| source[i].char_data == '=')
+			|| source[i].char_data == '='
+			|| source[i].char_data == '!')
 		{
 			if(i < nmem)
 			{
