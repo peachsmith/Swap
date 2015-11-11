@@ -48,3 +48,6 @@
 11/9/2015
 	The application can now parse basic arithmetic. Parentheses are
 	supported, but the first token cannot yet be a parenthesis.
+
+11/11/2015
+	Began adding support for blocks and if.
