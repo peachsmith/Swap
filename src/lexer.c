@@ -604,7 +604,17 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 	}
 
 	(*tokens)[ti].type = "symbol";
-	(*tokens)[ti].value = "[end]";
+	(*tokens)[ti].value = "end of source";
+	if(ti > 0)
+	{
+		(*tokens)[ti].row = (*tokens)[ti - 1].row;
+		(*tokens)[ti].column = (*tokens)[ti - 1].column + 1;
+	}
+	else
+	{
+		(*tokens)[ti].row = 0;
+		(*tokens)[ti].column = 0;
+	}
 	created_tokens++;
 
 	return created_tokens;

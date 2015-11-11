@@ -15,7 +15,7 @@ int CollectArguments(int argc, char** argv, args_t* args);
 
 token_t* next;
 int indent;
-int curlies;
+int syntax_error;
 
 void NextToken();
 int Accept(const char* expected);
@@ -37,7 +37,7 @@ int main(int argc,char** argv)
 	int token_count = 0;
 
 	indent = 0;
-	curlies = 0;
+	syntax_error = 0;
 
 	args.input = 0;
 	args.output = 0;
@@ -72,12 +72,17 @@ int main(int argc,char** argv)
 			{
 				Block();
 			}
-			while(strcmp((*next).value, "[end]"));
+			while(strcmp((*next).value, "end of source"));
 
-			if(curlies)
-				printf("mismatched curly braces\n");
+			printf("\n");
+			if(syntax_error)
+			{
+				printf("syntax error: %d\n", syntax_error);
+			}
 			else
-				printf("\n");
+			{
+				printf("no syntax errors detected\n");
+			}
 
 			if(args.flag_v)
 			{
@@ -189,6 +194,7 @@ int Accept(const char* expected)
 
 	if(!strcmp((*next).value, expected))
 	{
+		
 		if(!strcmp((*next).value, "{") || !strcmp((*next).value, "}"))
 		{
 			if(indent)
@@ -198,6 +204,7 @@ int Accept(const char* expected)
 		}
 		else
 			printf("%s", (*next).value);
+			
 		NextToken();
 		return 1;
 	}
@@ -210,7 +217,10 @@ int Expect(const char* expected)
 	if(Accept(expected))
 		return 1;
 	else
-		printf("\nunexpected token. expected: %s  found %s\n", expected, (*next).value);
+	{
+		printf("\nunexpected token row: %d column: %d. expected: %s  found %s\n", (*next).row, (*next).column, expected, (*next).value);
+		syntax_error = 2;
+	}
 	return 0;
 }
 
@@ -232,6 +242,7 @@ void Factor()
 	else
 	{
 		printf("\nsyntax error\n");
+		syntax_error = 1;
 		NextToken();
 	}
 }
@@ -249,6 +260,12 @@ void Expression()
 	Term();
 	while(Accept("+") || Accept("-"))
 		Term();
+
+	/* assignment */
+	if(Accept("=") || Accept("==") || Accept("!=")
+		|| Accept("<") || Accept(">") || Accept("<=")
+		|| Accept(">="))
+		Expression();
 }
 
 void Statement()
@@ -262,11 +279,8 @@ void Statement()
 	else if(Accept("if"))
 	{
 		Expect("(");
-
 		Expression();
-
 		Expect(")");
-
 		Block();
 	}
 	else
@@ -281,22 +295,15 @@ void Block()
 {
 	if(Accept("{"))
 	{
-		curlies++;
 		do
 		{
 			Statement();
 		}
-		while(strcmp((*next).value, "}") && strcmp((*next).value, "[end]"));
+		while(strcmp((*next).value, "}") && strcmp((*next).value, "end of source"));
 		Expect("}");
-		curlies--;
 	}
 	else
 	{
 		Statement();
-		if(Accept("}"))
-		{
-			printf("\nerror: unexpected '}'\n");
-			NextToken();
-		}
 	}
 }
