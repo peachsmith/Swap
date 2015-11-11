@@ -14,6 +14,7 @@ typedef struct Arguments
 int CollectArguments(int argc, char** argv, args_t* args);
 
 token_t* next;
+int indent;
 
 void NextToken();
 int Accept(const char* expected);
@@ -22,6 +23,7 @@ void Factor();
 void Term();
 void Expression();
 void Statement();
+void Block();
 
 int main(int argc,char** argv)
 {
@@ -32,6 +34,8 @@ int main(int argc,char** argv)
 	char* file_name;
 	int character_count;
 	int token_count = 0;
+
+	indent = 0;
 
 	args.input = 0;
 	args.output = 0;
@@ -57,12 +61,12 @@ int main(int argc,char** argv)
 		
 		token_count = Tokenize(source, &tokens, character_count);
 		
-		if(token_count)
+		if(token_count > 1)
 		{
 			/* get the first token */
 			next = &tokens[0];
 
-			Statement();
+			Block();
 
 			if(args.flag_v)
 			{
@@ -157,12 +161,14 @@ void NextToken()
 
 int Accept(const char* expected)
 {
-	printf("expected %s found %s\n",expected, (*next).value );
-	if(!strcmp(expected, "number") || !strcmp(expected, "identifier"))
+	//printf("expected %s found %s\n",expected, (*next).value );
+	if(!strcmp(expected, "number") 
+		|| !strcmp(expected, "identifier")
+		|| !strcmp(expected, "keyword"))
 	{
 		if(!strcmp((*next).type, expected))
 		{
-			//printf("%s", (*next).value);
+			printf("%s", (*next).value);
 			NextToken();
 			return 1;
 		}
@@ -172,7 +178,10 @@ int Accept(const char* expected)
 
 	if(!strcmp((*next).value, expected))
 	{
-		//printf("%s", (*next).value);
+		if(!strcmp((*next).value, "{") || !strcmp((*next).value, "}"))
+			printf("\n%*s",indent-1, (*next).value);
+		else
+			printf("%s", (*next).value);
 		NextToken();
 		return 1;
 	}
@@ -185,7 +194,7 @@ int Expect(const char* expected)
 	if(Accept(expected))
 		return 1;
 	else
-		printf("unexpected token. expected: %s  found %s\n", expected, (*next).value);
+		printf("\nunexpected token. expected: %s  found %s\n", expected, (*next).value);
 	return 0;
 }
 
@@ -206,87 +215,59 @@ void Factor()
 	}
 	else
 	{
-		printf(" $$$ syntax error $$$\n");
+		printf("\nsyntax error\n");
 		NextToken();
 	}
 }
 
 void Term()
 {
-	if(Accept("*") || Accept("/"))
-	{
-		if(Accept("+") || Accept("-") || Accept("*") || Accept("/"))
-		{
-			printf(" *** syntax error ***\n");
-		}
-	}
+	//if(Accept("*") || Accept("/"));
 	Factor();
 	while (Accept("*") || Accept("/"))
-	{
-		if(Accept("+") || Accept("-"))
-		{
-			if(Accept("+") || Accept("-") || Accept("*") || Accept("/"))
-			{
-				printf(" *** syntax error ***\n");
-			}
-		}
 		Factor();
-	}
 }
 
 void Expression()
 {
-	if(Accept("+") || Accept("-"))
-	{
-		if(Accept("+") || Accept("-") || Accept("*") || Accept("/"))
-		{
-			printf(" *** syntax error ***\n");
-		}
-	}
+	if(Accept("+") || Accept("-"));
 	Term();
 	while(Accept("+") || Accept("-"))
-	{
-		if(Accept("+") || Accept("-"))
-		{
-			if(Accept("+") || Accept("-") || Accept("*") || Accept("/"))
-			{
-				printf(" *** syntax error ***\n");
-			}
-		}
 		Term();
-	}
 }
 
 void Statement()
 {
-	if(Accept("("))
+	printf("\n%*s", indent, "");
+	indent += 2;
+	if(Accept(";"))
 	{
+		// empty statement
+	}
+	else if(Accept("if"))
+	{
+		Expect("(");
 		Expression();
 		Expect(")");
-		if(strcmp((*next).value,";"))
-			Expression();
-	}
-	if(Accept("identifier") || Accept("number"))
-	{
-		if(Accept("=") || Accept("+=") || Accept("-=") || Accept("*=")
-			|| Accept("/=") || Accept("<<=") || Accept(">>=")) /* assignment */
-		{
-			Expression();
-		}
-		else if(Accept(";"))
-		{
-			printf("found a declaration\n");
-			return;
-		}
-		else
-		{
-			Expression();
-		}
-	}
-	if(Expect(";"))
-	{
-		printf("\nfound a valid statement.\n");
+		Block();
 	}
 	else
-		printf("\ncould not find a valid statement.\n");
+	{
+		Expression();
+		Expect(";");
+	}
+	indent -= 2;
+}
+
+void Block()
+{
+	if(Accept("{"))
+	{
+		do
+			Statement();
+		while(strcmp((*next).value, "}") && strcmp((*next).value, "[end]"));
+		Expect("}");
+	}
+	else
+		Statement();
 }
