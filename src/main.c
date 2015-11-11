@@ -72,7 +72,7 @@ int main(int argc,char** argv)
 			{
 				Block();
 			}
-			while(strcmp((*next).value, "end of source"));
+			while(strcmp((*next).value, "end of stream"));
 
 			printf("\n");
 			if(syntax_error)
@@ -295,12 +295,13 @@ void Block()
 {
 	if(Accept("{"))
 	{
-		do
+		if(!Accept("}"))
 		{
-			Statement();
+			while(strcmp((*next).value, "}") && strcmp((*next).value, "end of stream"))
+				Statement();
+			Expect("}");
+
 		}
-		while(strcmp((*next).value, "}") && strcmp((*next).value, "end of source"));
-		Expect("}");
 	}
 	else
 	{

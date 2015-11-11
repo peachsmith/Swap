@@ -9,10 +9,6 @@
 
 #include "scanner.h"
 
-#define STATE_COMMENT     0x01
-#define STATE_IDENTIFIER  0x02
-#define STATE_SYMBOL      0x04
-
 /*
  * EBNF
  *

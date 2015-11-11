@@ -607,7 +607,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 	}
 
 	(*tokens)[ti].type = "symbol";
-	(*tokens)[ti].value = "end of source";
+	(*tokens)[ti].value = "end of stream";
 	if(ti > 0)
 	{
 		(*tokens)[ti].row = (*tokens)[ti - 1].row;
