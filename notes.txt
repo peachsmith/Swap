@@ -51,3 +51,4 @@
 
 11/11/2015
 	Began adding support for blocks and if.
+	Moved parsing functions to parser.c and parser.h

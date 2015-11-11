@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "lexer.h"
+#include "parser.h"
 
 // this is a struct since more args may be accepted in the future
 typedef struct Arguments
@@ -13,31 +13,16 @@ typedef struct Arguments
 
 int CollectArguments(int argc, char** argv, args_t* args);
 
-token_t* next;
-int indent;
-int syntax_error;
-
-void NextToken();
-int Accept(const char* expected);
-int Expect(const char* expected);
-void Factor();
-void Term();
-void Expression();
-void Statement();
-void Block();
-
 int main(int argc,char** argv)
 {
 	char version[15] = "1.0.0";
 	args_t args;
 	jchar_t* source;
 	token_t* tokens;
+	tstream_t token_stream;
 	char* file_name;
 	int character_count;
 	int token_count = 0;
-
-	indent = 0;
-	syntax_error = 0;
 
 	args.input = 0;
 	args.output = 0;
@@ -66,18 +51,20 @@ int main(int argc,char** argv)
 		if(token_count > 1)
 		{
 			/* get the first token */
-			next = &tokens[0];
+			token_stream.next = &tokens[0];
+			token_stream.indent = 0;
+			token_stream.syntax_error = 0;
 
 			do
 			{
-				Block();
+				Block(&token_stream);
 			}
-			while(strcmp((*next).value, "end of stream"));
+			while(strcmp((*token_stream.next).value, "end of stream"));
 
 			printf("\n");
-			if(syntax_error)
+			if(token_stream.syntax_error)
 			{
-				printf("syntax error: %d\n", syntax_error);
+				printf("syntax error: %d\n", token_stream.syntax_error);
 			}
 			else
 			{
@@ -168,143 +155,4 @@ int CollectArguments(int argc, char** argv, args_t* args)
 		}
 	}
 	return 1;
-}
-
-void NextToken()
-{
-	(*next++);
-}
-
-int Accept(const char* expected)
-{
-	//printf("expected %s found %s\n",expected, (*next).value );
-	if(!strcmp(expected, "number") 
-		|| !strcmp(expected, "identifier")
-		|| !strcmp(expected, "keyword"))
-	{
-		if(!strcmp((*next).type, expected))
-		{
-			printf("%s", (*next).value);
-			NextToken();
-			return 1;
-		}
-		else
-			return 0;
-	}
-
-	if(!strcmp((*next).value, expected))
-	{
-		
-		if(!strcmp((*next).value, "{") || !strcmp((*next).value, "}"))
-		{
-			if(indent)
-				printf("\n%*s",indent-1,(*next).value );
-			else
-				printf("\n%*s",indent,(*next).value );
-		}
-		else
-			printf("%s", (*next).value);
-			
-		NextToken();
-		return 1;
-	}
-	else 
-		return 0;
-}
-
-int Expect(const char* expected)
-{
-	if(Accept(expected))
-		return 1;
-	else
-	{
-		printf("\nunexpected token row: %d column: %d. expected: %s  found %s\n", (*next).row, (*next).column, expected, (*next).value);
-		syntax_error = 2;
-	}
-	return 0;
-}
-
-void Factor()
-{
-	if(Accept("identifier"))
-	{
-
-	}
-	else if(Accept("number"))
-	{
-
-	}
-	else if(Accept("("))
-	{
-		Expression();
-		Expect(")");
-	}
-	else
-	{
-		printf("\nsyntax error\n");
-		syntax_error = 1;
-		NextToken();
-	}
-}
-
-void Term()
-{
-	Factor();
-	while (Accept("*") || Accept("/"))
-		Factor();
-}
-
-void Expression()
-{
-	if(Accept("+") || Accept("-"));
-	Term();
-	while(Accept("+") || Accept("-"))
-		Term();
-
-	/* assignment */
-	if(Accept("=") || Accept("==") || Accept("!=")
-		|| Accept("<") || Accept(">") || Accept("<=")
-		|| Accept(">="))
-		Expression();
-}
-
-void Statement()
-{
-	printf("\n%*s", indent, "");
-	indent += 2;
-	if(Accept(";"))
-	{
-		// empty statement
-	}
-	else if(Accept("if"))
-	{
-		Expect("(");
-		Expression();
-		Expect(")");
-		Block();
-	}
-	else
-	{
-		Expression();
-		Expect(";");
-	}
-	indent -= 2;
-}
-
-void Block()
-{
-	if(Accept("{"))
-	{
-		if(!Accept("}"))
-		{
-			while(strcmp((*next).value, "}") && strcmp((*next).value, "end of stream"))
-				Statement();
-			Expect("}");
-
-		}
-	}
-	else
-	{
-		Statement();
-	}
 }
