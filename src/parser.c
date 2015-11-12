@@ -2,19 +2,19 @@
 
 void NextToken(tstream_t* stream)
 {
-	(*stream).next++;
+	stream->next++;
 }
 
 int Accept(const char* expected, tstream_t* stream)
 {
-	//printf("expected %s found %s\n",expected, (*(*stream).next).value);
+	//printf("expected %s found %s\n",expected, stream->next->value);
 	if(!strcmp(expected, "number") 
 		|| !strcmp(expected, "identifier")
 		|| !strcmp(expected, "keyword"))
 	{
-		if(!strcmp((*(*stream).next).type, expected))
+		if(!strcmp(stream->next->type, expected))
 		{
-			printf("%s", (*(*stream).next).value);
+			//printf("%s", stream->next->value);
 			NextToken(stream);
 			return 1;
 		}
@@ -22,19 +22,19 @@ int Accept(const char* expected, tstream_t* stream)
 			return 0;
 	}
 
-	if(!strcmp((*(*stream).next).value, expected))
+	if(!strcmp(stream->next->value, expected))
 	{
-		
-		if(!strcmp((*(*stream).next).value, "{") || !strcmp((*(*stream).next).value, "}"))
+		/*
+		if(!strcmp(stream->next->value, "{") || !strcmp(stream->next->value, "}"))
 		{
-			if((*stream).indent)
-				printf("\n%*s",(*stream).indent-1,(*(*stream).next).value);
+			if(stream->indent)
+				printf("\n%*s", stream->indent - 1, stream->next->value);
 			else
-				printf("\n%*s",(*stream).indent,(*(*stream).next).value);
+				printf("\n%*s", stream->indent, stream->next->value);
 		}
 		else
-			printf("%s", (*(*stream).next).value);
-			
+			printf("%s", stream->next->value);
+		*/
 		NextToken(stream);
 		return 1;
 	}
@@ -48,8 +48,11 @@ int Expect(const char* expected, tstream_t* stream)
 		return 1;
 	else
 	{
-		printf("\nunexpected token row: %d column: %d. expected: %s  found %s\n", (*(*stream).next).row, (*(*stream).next).column, expected, (*(*stream).next).value);
-		(*stream).syntax_error = 2;
+		if(!stream->syntax_error)
+		{
+			printf("\nunexpected token row: %d column: %d. expected: %s  found %s\n", stream->next->row, stream->next->column, expected, stream->next->value);
+			stream->syntax_error = 1;
+		}
 	}
 	return 0;
 }
@@ -71,8 +74,11 @@ void Factor(tstream_t* stream)
 	}
 	else
 	{
-		printf("\nsyntax error\n");
-		(*stream).syntax_error = 1;
+		if(!stream->syntax_error)
+		{
+			printf("\nsyntax error\n");
+			stream->syntax_error = 2;
+		}
 		NextToken(stream);
 	}
 }
@@ -100,8 +106,8 @@ void Expression(tstream_t* stream)
 
 void Statement(tstream_t* stream)
 {
-	printf("\n%*s", (*stream).indent, "");
-	(*stream).indent += 2;
+	//printf("\n%*s", stream->indent, "");
+	stream->indent += 2;
 	if(Accept(";",stream))
 	{
 		// empty statement
@@ -118,7 +124,7 @@ void Statement(tstream_t* stream)
 		Expression(stream);
 		Expect(";",stream);
 	}
-	(*stream).indent -= 2;
+	stream->indent -= 2;
 }
 
 void Block(tstream_t* stream)
@@ -127,7 +133,7 @@ void Block(tstream_t* stream)
 	{
 		if(!Accept("}",stream))
 		{
-			while(strcmp((*(*stream).next).value, "}") && strcmp((*(*stream).next).value, "end of stream"))
+			while(strcmp(stream->next->value, "}") && strcmp(stream->next->value, "end of stream"))
 				Statement(stream);
 			Expect("}",stream);
 

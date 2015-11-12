@@ -55,21 +55,17 @@ int main(int argc,char** argv)
 			token_stream.indent = 0;
 			token_stream.syntax_error = 0;
 
+			// initialize AST
+			(*token_stream.ast_node).value = "root";
+			(*token_stream.ast_node).type = ROOT;
+
 			do
 			{
 				Block(&token_stream);
 			}
-			while(strcmp((*token_stream.next).value, "end of stream"));
+			while(strcmp(token_stream.next->value, "end of stream"));
 
 			printf("\n");
-			if(token_stream.syntax_error)
-			{
-				printf("syntax error: %d\n", token_stream.syntax_error);
-			}
-			else
-			{
-				printf("no syntax errors detected\n");
-			}
 
 			if(args.flag_v)
 			{
