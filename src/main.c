@@ -13,6 +13,20 @@ typedef struct Arguments
 
 int CollectArguments(int argc, char** argv, args_t* args);
 
+typedef struct Stack
+{
+	char** data;
+	int capacity;
+	int size;
+} stack_t;
+
+void Push(stack_t* stack, char* value);
+void Pop(stack_t* stack);
+void PrintStack(stack_t* stack);
+
+stack_t o_stack; // operator stack
+stack_t e_stack; // expression stack
+
 int main(int argc,char** argv)
 {
 	char version[15] = "1.0.0";
@@ -66,6 +80,49 @@ int main(int argc,char** argv)
 			while(strcmp(token_stream.next->value, "end of stream"));
 
 			printf("\n");
+
+			// expression evaluating nonsense
+			if(!token_stream.syntax_error)
+			{
+				// initialize operator stack
+				o_stack.capacity = 10;
+				o_stack.data = malloc(sizeof(char*) * o_stack.capacity);
+				o_stack.size = 0;
+
+				// initialize expression stack
+				e_stack.capacity = 10;
+				e_stack.data = malloc(sizeof(char*) * e_stack.capacity);
+				e_stack.size = 0;
+
+				// point the token stream at the first token
+				token_stream.next = &tokens[0];
+
+				while(strcmp(token_stream.next->value, "end of stream"))
+				{
+					if(!strcmp(token_stream.next->type, "number") 
+						|| !strcmp(token_stream.next->type, "identifier"))
+					{
+						Push(&e_stack, token_stream.next->value);
+					}
+					else if(!strcmp(token_stream.next->type, "symbol")
+						&& strcmp(token_stream.next->value, "{") 
+						&& strcmp(token_stream.next->value, "}")
+						&& strcmp(token_stream.next->value, ";"))
+					{
+						Push(&o_stack, token_stream.next->value);
+					}
+					token_stream.next++;
+				}
+
+				printf("operator stack (size: %d, capacity: %d)\n", o_stack.size, o_stack.capacity);
+				PrintStack(&o_stack);
+				printf("expression stack (size: %d, capacity: %d)\n", e_stack.size, e_stack.capacity);
+				PrintStack(&e_stack);
+
+				//free the memory from the stacks
+				free(o_stack.data);
+				free(e_stack.data);
+			}
 
 			if(args.flag_v)
 			{
@@ -151,4 +208,41 @@ int CollectArguments(int argc, char** argv, args_t* args)
 		}
 	}
 	return 1;
+}
+
+void Push(stack_t* stack, char* value)
+{
+	if(stack->size < stack->capacity)
+	{
+		stack->data[stack->size++] = value;
+	}
+	else
+	{
+		char** temp_data = malloc(sizeof(char*) * stack->capacity);
+		int i;
+		for(i = 0; i < stack->capacity; i++)
+			temp_data[i] = stack->data[i];
+
+		free(stack->data);
+		stack->data = malloc(sizeof(char*) * (stack->capacity + stack->capacity / 2));
+		
+		for(i = 0; i < stack->capacity; i++)
+			stack->data[i] = temp_data[i];
+
+		free(temp_data);
+		stack->data[stack->size++] = value;
+		stack->capacity = stack->capacity + stack->capacity / 2;
+	}
+}
+
+void Pop(stack_t* stack)
+{
+	stack->data[stack->size--] = 0;
+}
+
+void PrintStack(stack_t* stack)
+{
+	int i;
+	for(i = 0; i < stack->size; i++)
+		printf("%s\n", stack->data[i]);
 }

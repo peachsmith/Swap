@@ -32,7 +32,5 @@ void Term(tstream_t* stream);
 void Expression(tstream_t* stream);
 void Statement(tstream_t* stream);
 void Block(tstream_t* stream);
-void Push(tstream_t* stream);
-void Pop(tstream_t* stream);
 
 #endif
