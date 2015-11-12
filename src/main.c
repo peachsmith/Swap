@@ -21,8 +21,11 @@ typedef struct Stack
 } stack_t;
 
 void Push(stack_t* stack, char* value);
-void Pop(stack_t* stack);
+void Pop(stack_t* stack, char** value);
+void PopAll(stack_t* stack);
+int Priority(char* token);
 void PrintStack(stack_t* stack);
+void EvaluateBinaryOperation(char** operator, char** l_operand, char** r_operand, char** result);
 
 stack_t o_stack; // operator stack
 stack_t e_stack; // expression stack
@@ -109,15 +112,42 @@ int main(int argc,char** argv)
 						&& strcmp(token_stream.next->value, "}")
 						&& strcmp(token_stream.next->value, ";"))
 					{
-						Push(&o_stack, token_stream.next->value);
+						if(o_stack.size)
+						{
+							//printf("next token: %s\n",token_stream.next->value);
+							if(Priority(token_stream.next->value) < Priority(o_stack.data[o_stack.size - 1]))
+							{
+								char* l_op;
+								char* r_op;
+								char* opr;
+								char* result;
+								Pop(&e_stack, &r_op);
+								Pop(&e_stack, &l_op);
+								Pop(&o_stack, &opr);
+								EvaluateBinaryOperation(&opr, &l_op, &r_op, &result);
+								printf("%s %s %s = %s\n",l_op, opr, r_op, result);
+							}
+							else
+								Push(&o_stack, token_stream.next->value);
+						}
+						else
+						{
+							printf("crap\n");
+							Push(&o_stack, token_stream.next->value);
+						}
+					}
+					else if(!strcmp(token_stream.next->value, ";"))
+					{
+						// evaluate expression
+						printf("operator stack\n");
+						PrintStack(&o_stack);
+						PopAll(&o_stack);
+						printf("expression stack\n");
+						PrintStack(&e_stack);
+						PopAll(&e_stack);
 					}
 					token_stream.next++;
 				}
-
-				printf("operator stack (size: %d, capacity: %d)\n", o_stack.size, o_stack.capacity);
-				PrintStack(&o_stack);
-				printf("expression stack (size: %d, capacity: %d)\n", e_stack.size, e_stack.capacity);
-				PrintStack(&e_stack);
 
 				//free the memory from the stacks
 				free(o_stack.data);
@@ -130,7 +160,7 @@ int main(int argc,char** argv)
 				token_t* token = &tokens[0];
 				for(ti = 0; ti < token_count; ti++)
 				{
-					printf("%-*s  %s\n", 12, (*token).type, (*token).value);
+					printf("%-*s  %s\n", 12, token->type, token->value);
 					*token++;
 				}
 			}
@@ -235,14 +265,52 @@ void Push(stack_t* stack, char* value)
 	}
 }
 
-void Pop(stack_t* stack)
+void Pop(stack_t* stack, char** value)
 {
-	stack->data[stack->size--] = 0;
+	if(stack->size)
+		*value = stack->data[stack->size-- - 1];
+}
+
+void PopAll(stack_t* stack)
+{
+	free(stack->data);
+	stack->size = 0;
+	stack->capacity = 10;
+	stack->data = malloc(sizeof(char*) * stack->capacity);
 }
 
 void PrintStack(stack_t* stack)
 {
 	int i;
 	for(i = 0; i < stack->size; i++)
-		printf("%s\n", stack->data[i]);
+		printf("%s", stack->data[i]);
+	printf("\n");
+}
+
+int Priority(char* value)
+{
+	if(!strcmp(value, "+") || !strcmp(value, "+"))
+		return 1;
+	else if(!strcmp(value, "*") || !strcmp(value, "/"))
+		return 2;
+	else return 0;
+}
+
+void EvaluateBinaryOperation(char** operator,  char** l_operand, char** r_operand, char** result)
+{
+	char l_buffer[15];
+	char r_buffer[15];
+	int l_op;
+	int r_op; 
+	sscanf(*l_operand, "%d", &l_op);
+	sscanf(*r_operand, "%d", &r_op);
+
+	if(!strcmp(*operator, "+"))
+		sprintf(*result, "%d", l_op + r_op);
+	else if(!strcmp(*operator, "-"))
+		sprintf(*result, "%d", l_op - r_op);
+	else if(!strcmp(*operator, "*"))
+		sprintf(*result, "%d", l_op * r_op);
+	else if(!strcmp(*operator, "/"))
+		sprintf(*result, "%d", l_op / r_op);
 }
