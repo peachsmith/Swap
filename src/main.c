@@ -3,7 +3,6 @@
 
 #include "parser.h"
 
-// this is a struct since more args may be accepted in the future
 typedef struct Arguments
 {
 	char* input;
@@ -27,9 +26,6 @@ int Priority(char* token);
 void PrintStack(stack_t* stack);
 void EvaluateBinaryOperation(char** operator, char** l_operand, char** r_operand, char** result);
 
-stack_t o_stack; // operator stack
-stack_t e_stack; // expression stack
-
 int main(int argc,char** argv)
 {
 	char version[15] = "1.0.0";
@@ -37,6 +33,8 @@ int main(int argc,char** argv)
 	jchar_t* source;
 	token_t* tokens;
 	tstream_t token_stream;
+	stack_t o_stack; // operator stack
+	stack_t e_stack; // expression stack
 	char* file_name;
 	int character_count;
 	int token_count = 0;
