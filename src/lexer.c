@@ -422,7 +422,7 @@ int Tokenize(jchar_t* source, token_t** tokens, int nmem)
 		}
 		else
 		{
-			const problem_size = ci;
+			const int problem_size = ci;
 			char problem_token[problem_size];
 			int nti;
 			for(nti = 0; nti <= problem_size; nti++)
