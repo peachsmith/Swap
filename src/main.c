@@ -126,7 +126,8 @@ int main(int argc,char** argv)
 								Pop(&o_stack, &opr);
 
 								EvaluateBinaryOperation(&opr, &l_op, &r_op, &result);
-								printf("%s %s %s = %s\n",l_op, opr, r_op, result);
+								Push(&e_stack, result);
+								Push(&o_stack, token_stream.next->value);
 
 								free(e_stack.data[e_stack.size + 1]);
 								free(e_stack.data[e_stack.size]);
@@ -137,13 +138,10 @@ int main(int argc,char** argv)
 								Push(&o_stack, token_stream.next->value);
 						}
 						else
-						{
 							Push(&o_stack, token_stream.next->value);
-						}
 					}
 					else if(!strcmp(token_stream.next->value, ";"))
 					{
-						// evaluate expression
 						printf("------------\noperator stack\n");
 						PrintStack(&o_stack);
 						PopAll(&o_stack);
