@@ -305,7 +305,7 @@ void PrintStack(stack_t* stack)
 
 int Priority(char* value)
 {
-	if(!strcmp(value, "+") || !strcmp(value, "+"))
+	if(!strcmp(value, "+") || !strcmp(value, "-"))
 		return 1;
 	else if(!strcmp(value, "*") || !strcmp(value, "/"))
 		return 2;
