@@ -69,7 +69,4 @@ int IsKeyword(char* characters);
 int IsIdentifier(char* characters);
 int IsSymbol(char* characters);
 
-// not currently used
-int IsPrimitive(char* characters);
-
 #endif

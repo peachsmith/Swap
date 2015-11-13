@@ -772,15 +772,3 @@ int IsSymbol(char* characters)
 	}
 	return 0;
 }
-
-// not currently used
-int IsPrimitive(char* characters)
-{
-	int i;
-	for(i = 0; i < 6; i++)
-	{
-		if(!strcmp(characters, PRIMITIVE[i]))
-			return 1;
-	}
-	return 0;
-}
