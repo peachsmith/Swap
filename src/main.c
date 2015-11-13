@@ -120,7 +120,7 @@ int main(int argc,char** argv)
 								char* l_op;
 								char* r_op;
 								char* opr;
-								char* result;
+								char* result; // malloc
 								Pop(&e_stack, &r_op);
 								Pop(&e_stack, &l_op);
 								Pop(&o_stack, &opr);
@@ -132,7 +132,6 @@ int main(int argc,char** argv)
 						}
 						else
 						{
-							printf("crap\n");
 							Push(&o_stack, token_stream.next->value);
 						}
 					}
@@ -242,6 +241,11 @@ int CollectArguments(int argc, char** argv, args_t* args)
 
 void Push(stack_t* stack, char* value)
 {
+	int size = 0;
+	while(value[size] != '\0')
+		size++;
+	size++;
+
 	if(stack->size < stack->capacity)
 	{
 		stack->data[stack->size++] = value;
@@ -298,19 +302,32 @@ int Priority(char* value)
 
 void EvaluateBinaryOperation(char** operator,  char** l_operand, char** r_operand, char** result)
 {
-	char l_buffer[15];
-	char r_buffer[15];
+	char l_buffer[30];
+	char r_buffer[30];
+	char result_buffer[30];
 	int l_op;
 	int r_op; 
 	sscanf(*l_operand, "%d", &l_op);
 	sscanf(*r_operand, "%d", &r_op);
 
 	if(!strcmp(*operator, "+"))
-		sprintf(*result, "%d", l_op + r_op);
+	{
+		sprintf(result_buffer, "%d", l_op + r_op);
+		*result = result_buffer;
+	}
 	else if(!strcmp(*operator, "-"))
-		sprintf(*result, "%d", l_op - r_op);
+	{
+		sprintf(result_buffer, "%d", l_op - r_op);
+		*result = result_buffer;
+	}
 	else if(!strcmp(*operator, "*"))
-		sprintf(*result, "%d", l_op * r_op);
+	{
+		sprintf(result_buffer, "%d", l_op * r_op);
+		*result = result_buffer;
+	}
 	else if(!strcmp(*operator, "/"))
-		sprintf(*result, "%d", l_op / r_op);
+	{
+		sprintf(result_buffer, "%d", l_op / r_op);
+		*result = result_buffer;
+	}
 }
