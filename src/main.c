@@ -113,24 +113,27 @@ int main(int argc,char** argv)
 						if(o_stack.size)
 						{
 							//printf("next token: %s\n",token_stream.next->value);
-							if(Priority(token_stream.next->value) < Priority(o_stack.data[o_stack.size - 1]))
+							if(Priority(token_stream.next->value) <= Priority(o_stack.data[o_stack.size - 1]))
 							{
-								char* l_op;
-								char* r_op;
-								char* opr;
-								char* result; // malloc
-								Pop(&e_stack, &r_op);
-								Pop(&e_stack, &l_op);
-								Pop(&o_stack, &opr);
+								while(o_stack.size > 0)
+								{
+									char* l_op;
+									char* r_op;
+									char* opr;
+									char* result; // malloc
+									Pop(&e_stack, &r_op);
+									Pop(&e_stack, &l_op);
+									Pop(&o_stack, &opr);
 
-								EvaluateBinaryOperation(&opr, &l_op, &r_op, &result);
-								Push(&e_stack, result);
+									EvaluateBinaryOperation(&opr, &l_op, &r_op, &result);
+									Push(&e_stack, result);
+									
+									free(e_stack.data[e_stack.size + 1]);
+									free(e_stack.data[e_stack.size]);
+									free(o_stack.data[o_stack.size]);
+									free(result);
+								}
 								Push(&o_stack, token_stream.next->value);
-
-								free(e_stack.data[e_stack.size + 1]);
-								free(e_stack.data[e_stack.size]);
-								free(o_stack.data[o_stack.size]);
-								free(result);
 							}
 							else
 								Push(&o_stack, token_stream.next->value);
@@ -140,10 +143,26 @@ int main(int argc,char** argv)
 					}
 					else if(!strcmp(token_stream.next->value, ";"))
 					{
-						printf("------------\noperator stack\n");
-						PrintStack(&o_stack);
+						while(o_stack.size > 0)
+						{
+							char* l_op;
+							char* r_op;
+							char* opr;
+							char* result; // malloc
+							Pop(&e_stack, &r_op);
+							Pop(&e_stack, &l_op);
+							Pop(&o_stack, &opr);
+
+							EvaluateBinaryOperation(&opr, &l_op, &r_op, &result);
+							Push(&e_stack, result);
+							
+							free(e_stack.data[e_stack.size + 1]);
+							free(e_stack.data[e_stack.size]);
+							free(o_stack.data[o_stack.size]);
+							free(result);
+						}
 						PopAll(&o_stack);
-						printf("expression stack\n");
+						printf("expressions: ");
 						PrintStack(&e_stack);
 						PopAll(&e_stack);
 					}
@@ -299,7 +318,7 @@ void PrintStack(stack_t* stack)
 {
 	int i;
 	for(i = 0; i < stack->size; i++)
-		printf("%s", stack->data[i]);
+		printf("%s, ", stack->data[i]);
 	printf("\n");
 }
 

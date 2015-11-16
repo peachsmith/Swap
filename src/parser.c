@@ -7,14 +7,12 @@ void NextToken(tstream_t* stream)
 
 int Accept(const char* expected, tstream_t* stream)
 {
-	//printf("expected %s found %s\n",expected, stream->next->value);
 	if(!strcmp(expected, "number") 
 		|| !strcmp(expected, "identifier")
 		|| !strcmp(expected, "keyword"))
 	{
 		if(!strcmp(stream->next->type, expected))
 		{
-			//printf("%s", stream->next->value);
 			NextToken(stream);
 			return 1;
 		}
@@ -24,17 +22,6 @@ int Accept(const char* expected, tstream_t* stream)
 
 	if(!strcmp(stream->next->value, expected))
 	{
-		/*
-		if(!strcmp(stream->next->value, "{") || !strcmp(stream->next->value, "}"))
-		{
-			if(stream->indent)
-				printf("\n%*s", stream->indent - 1, stream->next->value);
-			else
-				printf("\n%*s", stream->indent, stream->next->value);
-		}
-		else
-			printf("%s", stream->next->value);
-		*/
 		NextToken(stream);
 		return 1;
 	}
@@ -106,11 +93,10 @@ void Expression(tstream_t* stream)
 
 void Statement(tstream_t* stream)
 {
-	//printf("\n%*s", stream->indent, "");
 	stream->indent += 2;
 	if(Accept(";",stream))
 	{
-		// empty statement
+		
 	}
 	else if(Accept("if",stream))
 	{
