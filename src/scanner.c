@@ -78,29 +78,3 @@ void PrintScanResult(jchar_t* source)
 		i++;
 	}
 }
-
-void PrintScanResultToFile(int buffer_size, jchar_t* source, const char* file_name)
-{
-	FILE* fp;
-	fp = fopen(file_name, "w");
-	if(fp)
-	{
-		int i;
-		for(i = 0; i < buffer_size; i++)
-		{
-			if(source[i].char_data == '\n')
-				fprintf(fp, "%-*s ", 12, "[newline]");
-			else if(source[i].char_data == '\t')
-				fprintf(fp, "%-*s ", 12, "[tab]");
-			else if(source[i].char_data == ' ')
-				fprintf(fp, "%-*s ", 12, "[space]");
-			else if(source[i].char_data == '\0')
-				printf("%-*s ", 12, "[null]");
-			else
-				fprintf(fp, "%-*c ", 12, source[i].char_data);
-
-			fprintf(fp, "%i:%i\n", source[i].row, source[i].column);
-		}
-	}
-	fclose(fp);
-}

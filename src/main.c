@@ -86,31 +86,14 @@ int main(int argc,char** argv)
 				free(e_stack.data);
 			}
 
-			if(args.flag_v)
-			{
-				int ti;
-				token_t* token = &tokens[0];
-				for(ti = 0; ti < token_count; ti++)
-				{
-					printf("%-*s  %s\n", 12, token->type, token->value);
-					*token++;
-				}
-			}
 		}
 
 	}
-	/*
-	if(args.flag_v)
-	{
-		if(args.input)
-			PrintScanResult(source);
-		else
-			printf("no input file\n");
-	}
-	*/
 
 	if(args.output)
-		PrintScanResultToFile(character_count, source, args.output);
+	{
+		// TODO have some sort of output
+	}
 
 	free(source);
 

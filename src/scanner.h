@@ -21,6 +21,5 @@ typedef struct Character
 
 int ScanSource(char* file_name, jchar_t** source);
 void PrintScanResult(jchar_t* source);
-void PrintScanResultToFile(int buffer_size, jchar_t* source, const char* file_name);
 
 #endif
