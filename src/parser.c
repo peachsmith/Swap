@@ -250,23 +250,23 @@ void EvaluateBinaryOperation(char** opr,  char** l_operand, char** r_operand, ch
 
 }
 
-void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
+char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators)
 {
-	while(strcmp(token->value, "end of stream"))
+	while(strcmp((*token)->value, "end of stream"))
 	{
-		if(!strcmp(token->type, "number") 
-			|| !strcmp(token->type, "identifier"))
+		if(!strcmp((*token)->type, "number") 
+			|| !strcmp((*token)->type, "identifier"))
 		{
-			Push(expressions, token->value);
+			Push(expressions, (*token)->value);
 		}
-		else if(!strcmp(token->type, "symbol")
-			&& strcmp(token->value, "{") 
-			&& strcmp(token->value, "}")
-			&& strcmp(token->value, ";"))
+		else if(!strcmp((*token)->type, "symbol")
+			&& strcmp((*token)->value, "{") 
+			&& strcmp((*token)->value, "}")
+			&& strcmp((*token)->value, ";"))
 		{
 			if(operators->size)
 			{
-				if(Priority(token->value) <= Priority(operators->data[operators->size - 1]))
+				if(Priority((*token)->value) <= Priority(operators->data[operators->size - 1]))
 				{
 					while(operators->size > 0 && strcmp(operators->data[operators->size - 1], "("))
 					{
@@ -288,9 +288,9 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 						free(result);
 					}
 								
-					Push(operators, token->value);
+					Push(operators, (*token)->value);
 				}
-				else if(!strcmp(token->value, ")"))
+				else if(!strcmp((*token)->value, ")"))
 				{
 					while(operators->size > 0 && strcmp(operators->data[operators->size - 1], "("))
 					{
@@ -326,12 +326,12 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 						printf("mismatched parentheses\n");
 				}
 				else
-					Push(operators, token->value);
+					Push(operators, (*token)->value);
 			}
 			else
-				Push(operators, token->value);
+				Push(operators, (*token)->value);
 		}
-		else if(!strcmp(token->value, ";"))
+		else if(!strcmp((*token)->value, ";"))
 		{
 			while(operators->size > 0)
 			{
@@ -353,10 +353,32 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 				free(result);
 			}
 			PopAll(operators);
-			printf("expressions: ");
-			PrintStack(expressions);
-			PopAll(expressions);
+			if(expressions->size > 1)
+			{
+				PopAll(expressions);
+				return 0;
+			}
+			else if(expressions->size == 1)
+			{
+				(*token)++;
+				char* result;
+				Pop(expressions, &result);
+				return result;
+			}
 		}
-		token++;
+		(*token)++;
+	}
+}
+
+void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
+{
+	while(strcmp(token->value, "end of stream"))
+	{
+		char* result = Evaluate(&token, expressions, operators);
+		if(result)
+		{
+			printf("result: %s\n", result);
+			free(result);
+		}
 	}
 }

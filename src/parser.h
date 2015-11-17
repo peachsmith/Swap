@@ -32,6 +32,7 @@ void PopAll(stack_t* stack);
 int Priority(char* token);
 void PrintStack(stack_t* stack);
 void EvaluateBinaryOperation(char** opr, char** l_operand, char** r_operand, char** result);
+char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators);
 void Interpret(token_t* token, stack_t* expressions, stack_t* operators);
 
 #endif
