@@ -115,7 +115,7 @@ int main(int argc,char** argv)
 							//printf("next token: %s\n",token_stream.next->value);
 							if(Priority(token_stream.next->value) <= Priority(o_stack.data[o_stack.size - 1]))
 							{
-								while(o_stack.size > 0)
+								while(o_stack.size > 0 && strcmp(o_stack.data[o_stack.size - 1], "("))
 								{
 									char* l_op;
 									char* r_op;
@@ -134,7 +134,42 @@ int main(int argc,char** argv)
 									Push(&e_stack, result);
 									free(result);
 								}
+								
 								Push(&o_stack, token_stream.next->value);
+							}
+							else if(!strcmp(token_stream.next->value, ")"))
+							{
+								while(o_stack.size > 0 && strcmp(o_stack.data[o_stack.size - 1], "("))
+								{
+									char* l_op;
+									char* r_op;
+									char* opr;
+									char* result; // malloc
+									Pop(&e_stack, &r_op);
+									Pop(&e_stack, &l_op);
+									Pop(&o_stack, &opr);
+
+									EvaluateBinaryOperation(&opr, &l_op, &r_op, &result);
+									
+									free(e_stack.data[e_stack.size + 1]);
+									free(e_stack.data[e_stack.size]);
+									free(o_stack.data[o_stack.size]);
+
+									Push(&e_stack, result);
+									free(result);
+								}
+								if(!o_stack.size)
+								{
+									printf("mismatched parentheses\n");
+									break;
+								}
+								if(!strcmp(o_stack.data[o_stack.size - 1], "("))
+								{
+									char* l_paren;
+									Pop(&o_stack, &l_paren);
+								}
+								else
+									printf("mismatched parentheses\n");
 							}
 							else
 								Push(&o_stack, token_stream.next->value);
