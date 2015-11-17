@@ -126,11 +126,12 @@ int main(int argc,char** argv)
 									Pop(&o_stack, &opr);
 
 									EvaluateBinaryOperation(&opr, &l_op, &r_op, &result);
-									Push(&e_stack, result);
 									
 									free(e_stack.data[e_stack.size + 1]);
 									free(e_stack.data[e_stack.size]);
 									free(o_stack.data[o_stack.size]);
+
+									Push(&e_stack, result);
 									free(result);
 								}
 								Push(&o_stack, token_stream.next->value);
@@ -154,11 +155,12 @@ int main(int argc,char** argv)
 							Pop(&o_stack, &opr);
 
 							EvaluateBinaryOperation(&opr, &l_op, &r_op, &result);
-							Push(&e_stack, result);
-							
+
 							free(e_stack.data[e_stack.size + 1]);
 							free(e_stack.data[e_stack.size]);
 							free(o_stack.data[o_stack.size]);
+
+							Push(&e_stack, result);
 							free(result);
 						}
 						PopAll(&o_stack);
@@ -328,6 +330,8 @@ int Priority(char* value)
 		return 1;
 	else if(!strcmp(value, "*") || !strcmp(value, "/"))
 		return 2;
+	else if(!strcmp(value, "(") || !strcmp(value, ")"))
+		return 4;
 	else return 0;
 }
 
