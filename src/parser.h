@@ -17,6 +17,14 @@ typedef struct Stack
 	int size;
 } stack_t;
 
+typedef struct Object
+{
+	char* identifier;
+	char type[25];
+	int arg_count;
+	struct Object* arg_values;
+} object_t;
+
 void NextToken(tstream_t* stream);
 int Accept(const char* expected, tstream_t* stream);
 int Expect(const char* expected, tstream_t* stream);
@@ -34,5 +42,7 @@ void PrintStack(stack_t* stack);
 void EvaluateBinaryOperation(char** opr, char** l_operand, char** r_operand, char** result);
 char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators);
 void Interpret(token_t* token, stack_t* expressions, stack_t* operators);
+int IsDeclared(object_t* objects, int obj_count, char* identifier);
+void Resize(object_t** objects, int capacity);
 
 #endif

@@ -372,6 +372,10 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators)
 
 void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 {
+	int obj_count = 0;
+	int capacity = 10;
+	object_t* objects = malloc(sizeof(object_t) * capacity);
+	
 	while(strcmp(token->value, "end of stream"))
 	{
 		char* result = Evaluate(&token, expressions, operators);
@@ -381,4 +385,31 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 			free(result);
 		}
 	}
+}
+
+int IsDeclared(object_t* objects, int obj_count, char* identifier)
+{
+	int i;
+	for(i = 0; i < obj_count; i++)
+	{
+		if(!strcmp(objects->identifier, identifier))
+			return i;
+		else
+			objects++;
+	}
+	return -1;
+}
+
+void Resize(object_t** objects, int capacity)
+{
+	object_t* new_objects = malloc(sizeof(object_t) * (capacity + capacity / 2));
+	int i;
+	for(i = 0; i < capacity; i++)
+	{
+		new_objects->identifier = (*objects)->identifier;
+		new_objects++;
+		(*objects)++;
+	}
+	free(*objects);
+	*objects = new_objects;
 }
