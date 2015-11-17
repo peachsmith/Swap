@@ -14,7 +14,6 @@ int CollectArguments(int argc, char** argv, args_t* args);
 
 int main(int argc,char** argv)
 {
-	char version[15] = "1.0.0";
 	args_t args;
 	jchar_t* source;
 	token_t* tokens;
@@ -33,7 +32,7 @@ int main(int argc,char** argv)
 
 	if(argc == 1)
 	{
-		printf("SWAP (solution without a problem)\nAuthor: John Powell\nversion: %s", version);
+		printf("SWAP (solution without a problem)\nAuthor: John Powell\n");
 		return 0;
 	}
 
