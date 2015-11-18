@@ -20,10 +20,18 @@ typedef struct Stack
 typedef struct Object
 {
 	char* identifier;
-	char type[25];
+	char* type;
+	char* value;
 	int arg_count;
 	struct Object* arg_values;
 } object_t;
+
+typedef struct ObjectStack
+{
+	object_t* objects;
+	int size;
+	int capacity;
+} ostack_t;
 
 void NextToken(tstream_t* stream);
 int Accept(const char* expected, tstream_t* stream);
@@ -39,10 +47,12 @@ void Pop(stack_t* stack, char** value);
 void PopAll(stack_t* stack);
 int Priority(char* token);
 void PrintStack(stack_t* stack);
-void EvaluateBinaryOperation(char** opr, char** l_operand, char** r_operand, char** result);
-char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators);
+void EvaluateBinaryOperation(char** opr, char** l_operand, char** r_operand, char** result, ostack_t* ostack);
+char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack_t* ostack);
 void Interpret(token_t* token, stack_t* expressions, stack_t* operators);
-int IsDeclared(object_t* objects, int obj_count, char* identifier);
-void Resize(object_t** objects, int capacity);
+
+int IsDeclared(ostack_t* ostack, char* identifier);
+void Resize(ostack_t* ostack);
+void PushObject(ostack_t* ostack, object_t* object);
 
 #endif

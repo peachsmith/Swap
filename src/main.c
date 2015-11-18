@@ -18,8 +18,8 @@ int main(int argc,char** argv)
 	jchar_t* source;
 	token_t* tokens;
 	tstream_t token_stream;
-	stack_t o_stack; // operator stack
-	stack_t e_stack; // expression stack
+	stack_t opr_stack; // operator stack
+	stack_t exp_stack; // expression stack
 	char* file_name;
 	int character_count;
 	int token_count = 0;
@@ -67,23 +67,23 @@ int main(int argc,char** argv)
 			if(!token_stream.syntax_error)
 			{
 				// initialize operator stack
-				o_stack.capacity = 10;
-				o_stack.data = malloc(sizeof(char*) * o_stack.capacity);
-				o_stack.size = 0;
+				opr_stack.capacity = 10;
+				opr_stack.data = malloc(sizeof(char*) * opr_stack.capacity);
+				opr_stack.size = 0;
 
 				// initialize expression stack
-				e_stack.capacity = 10;
-				e_stack.data = malloc(sizeof(char*) * e_stack.capacity);
-				e_stack.size = 0;
+				exp_stack.capacity = 10;
+				exp_stack.data = malloc(sizeof(char*) * exp_stack.capacity);
+				exp_stack.size = 0;
 
 				// point the token stream at the first token
 				token_stream.next = &tokens[0];
 
-				Interpret(token_stream.next, &e_stack, &o_stack);
+				Interpret(token_stream.next, &exp_stack, &opr_stack);
 
 				//free the memory from the stacks
-				free(o_stack.data);
-				free(e_stack.data);
+				free(opr_stack.data);
+				free(exp_stack.data);
 			}
 
 		}
