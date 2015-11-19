@@ -204,7 +204,7 @@ int Priority(char* value)
 	else return 0;
 }
 
-void EvaluateBinaryOperation(char** opr,  char** l_operand, char** r_operand, char** result, ostack_t* ostack)
+void EvaluateBinaryOperation(char** opr,  char** l_operand, char** r_operand, char** result)
 {
 	char l_buffer[30];
 	char r_buffer[30];
@@ -247,17 +247,9 @@ void EvaluateBinaryOperation(char** opr,  char** l_operand, char** r_operand, ch
 			(*result)[i] = result_buffer[i++];
 		(*result)[i] = result_buffer[i];
 	}
-	else if(!strcmp(*opr, "="))
-	{
-		if(!IsDeclared(ostack, *l_operand))
-		{
-
-		}
-	}
-
 }
 
-char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack_t* ostack)
+char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators)
 {
 	while(strcmp((*token)->value, "end of stream"))
 	{
@@ -285,7 +277,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						Pop(expressions, &l_op);
 						Pop(operators, &opr);
 
-						EvaluateBinaryOperation(&opr, &l_op, &r_op, &result, ostack);
+						EvaluateBinaryOperation(&opr, &l_op, &r_op, &result);
 									
 						free(expressions->data[expressions->size + 1]);
 						free(expressions->data[expressions->size]);
@@ -309,7 +301,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						Pop(expressions, &l_op);
 						Pop(operators, &opr);
 
-						EvaluateBinaryOperation(&opr, &l_op, &r_op, &result, ostack);
+						EvaluateBinaryOperation(&opr, &l_op, &r_op, &result);
 									
 						free(expressions->data[expressions->size + 1]);
 						free(expressions->data[expressions->size]);
@@ -350,7 +342,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 				Pop(expressions, &l_op);
 				Pop(operators, &opr);
 
-				EvaluateBinaryOperation(&opr, &l_op, &r_op, &result, ostack);
+				EvaluateBinaryOperation(&opr, &l_op, &r_op, &result);
 
 				free(expressions->data[expressions->size + 1]);
 				free(expressions->data[expressions->size]);
@@ -378,93 +370,14 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 }
 
 void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
-{
-	ostack_t ostack;
-	ostack.objects = malloc(sizeof(object_t) * 10);
-	ostack.size = 0;
-	ostack.capacity = 10;
-	
+{	
 	while(strcmp(token->value, "end of stream"))
 	{
-		char* result = Evaluate(&token, expressions, operators, &ostack);
+		char* result = Evaluate(&token, expressions, operators);
 		if(result)
 		{
 			printf("result: %s\n", result);
 			free(result);
 		}
 	}
-
-	int i;
-	for(i = 0; i < ostack.size; i++)
-	{
-		free(ostack.objects[i].identifier);
-	}
-	free(ostack.objects);
-}
-
-int IsDeclared(ostack_t* ostack, char* identifier)
-{
-	int i;
-	for(i = 0; i < ostack->size; i++)
-	{
-		if(!strcmp(ostack->objects[i].identifier, identifier))
-			return i;
-	}
-	return -1;
-}
-
-void Resize(ostack_t* ostack)
-{
-	object_t* new_objects = malloc(sizeof(object_t) * (ostack->capacity + ostack->capacity / 2));
-	int i;
-	for(i = 0; i < ostack->capacity; i++)
-	{
-		new_objects->identifier = ostack->objects[i].identifier;
-		new_objects++;
-	}
-	free(ostack->objects);
-	ostack->objects = new_objects;
-}
-
-void PushObject(ostack_t* ostack, object_t* object)
-{
-	if(ostack->size == ostack->capacity)
-		Resize(ostack);
-
-	int ident_size = 0;
-	int value_size = 0;
-	int type_size = 0;
-	int i;
-
-	while(object->identifier[ident_size] != '\0')
-		ident_size++;
-	ident_size++;
-
-	while(object->value[value_size] != '\0')
-		value_size++;
-	value_size++;
-
-	while(object->value[type_size] != '\0')
-		type_size++;
-	type_size++;
-
-	ostack->objects[ostack->size].type = malloc(sizeof(char) * 25);
-	if(!strcmp(object->type, "number"))
-		ostack->objects[ostack->size].type = "number";
-	else if(!strcmp(object->type, "string"))
-		ostack->objects[ostack->size].type = "string";
-
-	ostack->objects[ostack->size].identifier = malloc(sizeof(char) * ident_size);
-	for(i = 0; i < ident_size; i++)
-		ostack->objects[ostack->size].identifier[i] = object->identifier[i];
-
-	ostack->objects[ostack->size].value = malloc(sizeof(char) * value_size);
-	for(i = 0; i < value_size; i++)
-		ostack->objects[ostack->size].value[i] = object->value[i];
-
-	ostack->objects[ostack->size].type = malloc(sizeof(char) * type_size);
-	for(i = 0; i < type_size; i++)
-		ostack->objects[ostack->size].type[i] = object->type[i];
-
-	(ostack->size)++;
 }
