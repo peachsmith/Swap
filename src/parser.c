@@ -289,7 +289,17 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 
 							CreateObject(ostack, identifier, type, result);
 							if(!strcmp((*token)->value,"end of stream"))
+							{
+								PopAll(expressions);
+								PopAll(operators);
 								return 0;
+							}
+							else
+							{
+								PopAll(expressions);
+								PopAll(operators);
+								continue;
+							}
 						}
 					}	
 				}
