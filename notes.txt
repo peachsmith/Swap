@@ -54,5 +54,8 @@
 	Moved parsing functions to parser.c and parser.h
 
 11/17/2015
-	Completed support for parentheses. The program can now parse basic arithmetic
-	statements.
+	Completed support for parentheses. The program can now parse basic 
+	arithmetic statements.
+
+11/20/2015
+	Began allowing for variable declaration and assignment.

@@ -249,18 +249,56 @@ void EvaluateBinaryOperation(char** opr,  char** l_operand, char** r_operand, ch
 	}
 }
 
-char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators)
+char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack_t* ostack)
 {
 	while(strcmp((*token)->value, "end of stream"))
 	{
-		if(!strcmp((*token)->type, "number") 
-			|| !strcmp((*token)->type, "identifier"))
+		if(!strcmp((*token)->type, "number"))
 		{
 			Push(expressions, (*token)->value);
+		}
+		else if(!strcmp((*token)->type, "identifier"))
+		{
+			char* identifier = (*token)->value;
+			char* type;
+			if(strcmp((*token + 1)->value, "end of stream"))
+			{
+				if(!expressions->size && !operators->size)
+				{
+					if(!strcmp((*token + 1)->value, ";"))
+					{
+						CreateObject(ostack, identifier, "null", "null");
+					}	
+					else if(!strcmp((*token + 1)->value, "="))
+					{
+						(*token)++;
+						if(strcmp((*token + 1)->value, "end of stream") && strcmp((*token + 1)->value, ";"))
+							(*token)++;
+						else
+						{
+							printf("incomplete assignment. expected expression, found %s\n", (*token + 1)->value);
+							return 0;
+						}
+						char* result = Evaluate(token, expressions, operators, ostack);
+						if(result)
+						{
+							if(result[0] != '\0' && result[0] == '"')
+								type = "string";
+							else
+								type = "number";
+
+							CreateObject(ostack, identifier, type, result);
+							if(!strcmp((*token)->value,"end of stream"))
+								return 0;
+						}
+					}	
+				}
+			}
 		}
 		else if(!strcmp((*token)->type, "symbol")
 			&& strcmp((*token)->value, "{") 
 			&& strcmp((*token)->value, "}")
+			&& strcmp((*token)->value, "=")
 			&& strcmp((*token)->value, ";"))
 		{
 			if(operators->size)
@@ -355,6 +393,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators)
 			if(expressions->size > 1)
 			{
 				PopAll(expressions);
+				printf("could not evalute all expressions\n");
 				return 0;
 			}
 			else if(expressions->size == 1)
@@ -367,17 +406,107 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators)
 		}
 		(*token)++;
 	}
+	
+	return 0;
 }
 
 void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 {	
+	ostack_t ostack;
+	ostack.size = 0;
+	ostack.capacity = 10;
+	ostack.objects = malloc(sizeof(object_t) * 10);
+
 	while(strcmp(token->value, "end of stream"))
 	{
-		char* result = Evaluate(&token, expressions, operators);
+		char* result = Evaluate(&token, expressions, operators, &ostack);
 		if(result)
 		{
 			printf("result: %s\n", result);
 			free(result);
 		}
+		else
+		{
+			break;
+		}
 	}
+
+	int i;
+	for(i = 0; i < ostack.size; i++)
+	{
+		free(ostack.objects[i].identifier);
+		free(ostack.objects[i].type);
+		free(ostack.objects[i].value);
+	}
+	free(ostack.objects);
+}
+
+int CreateObject(ostack_t* ostack, char* identifier, char* type, char* value)
+{
+	int i;
+	int identifier_size = 0;
+	int type_size = 0;
+	int value_size = 0;
+
+	while(identifier[identifier_size] != '\0')
+		identifier_size++;
+	identifier_size++;
+
+	while(type[type_size] != '\0')
+		type_size++;
+	type_size++;
+
+	while(value[value_size] != '\0')
+		value_size++;
+	value_size++;
+
+	if(ostack->size >= ostack->capacity)
+	{
+		printf("cannot create any more objects. %d objects already exist.\n", ostack->size);
+		return 0;
+	}
+	else if(Exists(ostack, identifier) == -1)
+	{
+		ostack->objects[ostack->size].identifier = malloc(sizeof(char) * identifier_size);
+		ostack->objects[ostack->size].type = malloc(sizeof(char) * type_size);
+		ostack->objects[ostack->size].value = malloc(sizeof(char) * value_size);
+
+		for(i = 0; i < identifier_size; i++)
+			ostack->objects[ostack->size].identifier[i] = identifier[i];
+
+		for(i = 0; i < type_size; i++)
+			ostack->objects[ostack->size].type[i] = type[i];
+
+		for(i = 0; i < value_size; i++)
+			ostack->objects[ostack->size].value[i] = value[i];
+
+		ostack->size++;
+
+		printf("created an object: %s \n%d existing object(s):\n", identifier, ostack->size);
+		PrintObjects(ostack);
+	}
+	else
+	{
+		printf("object %s already exists.\n", identifier);
+		return 0;
+	}
+}
+
+int Exists(ostack_t* ostack, char* identifier)
+{
+	int i;
+	for(i = 0; i < ostack->size; i++)
+	{
+		if(!strcmp(ostack->objects[i].identifier, identifier))
+			return i;
+	}
+	return -1;
+}
+
+void PrintObjects(ostack_t* ostack)
+{
+	int i;
+	for(i = 0; i < ostack->size; i++)
+		printf("  identifier: %s, type: %s, value: %s\n", 
+			ostack->objects[i].identifier, ostack->objects[i].type, ostack->objects[i].value);
 }

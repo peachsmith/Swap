@@ -22,8 +22,6 @@ typedef struct Object
 	char* identifier;
 	char* type;
 	char* value;
-	int arg_count;
-	struct Object* arg_values;
 } object_t;
 
 typedef struct ObjectStack
@@ -48,7 +46,10 @@ void PopAll(stack_t* stack);
 int Priority(char* token);
 void PrintStack(stack_t* stack);
 void EvaluateBinaryOperation(char** opr, char** l_operand, char** r_operand, char** result);
-char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators);
+char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack_t* ostack);
 void Interpret(token_t* token, stack_t* expressions, stack_t* operators);
+int CreateObject(ostack_t* ostack, char* identifier, char* type, char* value);
+int Exists(ostack_t* ostack, char* identifier);
+void PrintObjects(ostack_t* ostack);
 
 #endif
