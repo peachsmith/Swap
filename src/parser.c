@@ -9,7 +9,8 @@ int Accept(const char* expected, tstream_t* stream)
 {
 	if(!strcmp(expected, "number") 
 		|| !strcmp(expected, "identifier")
-		|| !strcmp(expected, "keyword"))
+		|| !strcmp(expected, "keyword")
+		|| !strcmp(expected, "string"))
 	{
 		if(!strcmp(stream->next->type, expected))
 		{
@@ -46,18 +47,23 @@ int Expect(const char* expected, tstream_t* stream)
 
 void Factor(tstream_t* stream)
 {
-	if(Accept("identifier",stream))
+	if(Accept("identifier", stream))
 	{
 
 	}
-	else if(Accept("number",stream))
+	else if(Accept("number", stream))
 	{
 
 	}
-	else if(Accept("(",stream))
+	else if(Accept("(", stream))
 	{
 		Expression(stream);
-		Expect(")",stream);
+		Expect(")", stream);
+	}
+	else if(Accept("string", stream))
+	{
+		while(Accept("+", stream))
+			Expression(stream);
 	}
 	else
 	{
@@ -79,15 +85,15 @@ void Term(tstream_t* stream)
 
 void Expression(tstream_t* stream)
 {
-	if(Accept("+",stream) || Accept("-",stream));
+	if(Accept("+", stream) || Accept("-", stream));
 	Term(stream);
-	while(Accept("+",stream) || Accept("-",stream))
+	while(Accept("+", stream) || Accept("-", stream))
 		Term(stream);
 
 	/* assignment */
-	if(Accept("=",stream) || Accept("==",stream) || Accept("!=",stream)
-		|| Accept("<",stream) || Accept(">",stream) || Accept("<=",stream)
-		|| Accept(">=",stream))
+	if(Accept("=", stream) || Accept("==", stream) || Accept("!=", stream)
+		|| Accept("<", stream) || Accept(">", stream) || Accept("<=", stream)
+		|| Accept(">=", stream))
 		Expression(stream);
 }
 
@@ -253,7 +259,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 {
 	while(strcmp((*token)->value, "end of stream"))
 	{
-		if(!strcmp((*token)->type, "number"))
+		if(!strcmp((*token)->type, "number") || !strcmp((*token)->type, "string"))
 		{
 			Push(expressions, (*token)->value);
 		}
@@ -301,6 +307,10 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 								continue;
 							}
 						}
+						else
+						{
+							return 0;
+						}
 					}
 					else
 					{
@@ -311,7 +321,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						}
 						else
 						{
-							printf("no object with identifier '%s' has been defined.\n", identifier);
+							printf("There is currently no object with the identifier '%s'.\n", identifier);
 							return 0;
 						}
 					}	
@@ -325,7 +335,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 					}
 					else
 					{
-						printf("no object with identifier '%s' has been defined.\n", identifier);
+						printf("There is currently no object with the identifier '%s'.\n", identifier);
 						return 0;
 					}
 				}
