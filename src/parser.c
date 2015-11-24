@@ -301,6 +301,19 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 								continue;
 							}
 						}
+					}
+					else
+					{
+						int object_index = Exists(ostack, identifier);
+						if(object_index > -1)
+						{
+							Push(expressions, ostack->objects[object_index].value);
+						}
+						else
+						{
+							printf("no object with identifier '%s' has been defined.\n", identifier);
+							return 0;
+						}
 					}	
 				}
 			}
