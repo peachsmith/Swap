@@ -51,5 +51,6 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators);
 int CreateObject(ostack_t* ostack, char* identifier, char* type, char* value);
 int Exists(ostack_t* ostack, char* identifier);
 void PrintObjects(ostack_t* ostack);
+void FunctionCall(ostack_t* ostack, stack_t* expressions, stack_t* operators);
 
 #endif

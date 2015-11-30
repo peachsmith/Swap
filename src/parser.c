@@ -268,6 +268,7 @@ void EvaluateBinaryOperation(char** opr,  char** l_operand, char** r_operand, ch
 
 char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack_t* ostack)
 {
+	int parentheses = 0;
 	while(strcmp((*token)->value, "end of stream"))
 	{
 		if(!strcmp((*token)->type, "number") || !strcmp((*token)->type, "string"))
@@ -282,7 +283,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 			{
 				if(!expressions->size && !operators->size)
 				{
-					if(!strcmp((*token + 1)->value, ";"))
+					if(!strcmp((*token + 1)->value, ";")) // declaration
 					{
 						CreateObject(ostack, identifier, "null", "null");
 					}	
@@ -309,10 +310,12 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 							{
 								PopAll(expressions);
 								PopAll(operators);
+								free(result);
 								return 0;
 							}
 							else
 							{
+								free(result);
 								PopAll(expressions);
 								PopAll(operators);
 								continue;
@@ -328,7 +331,16 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						if(!strcmp((*token)->value, "write"))
 						{
 							(*token)++;
-							printf("%s\n", Evaluate(token, expressions, operators, ostack));
+							(*token)++;
+							char* result;
+							result = Evaluate(token, expressions, operators, ostack);
+
+							if(result)
+							{
+								printf("%s\n", result);
+								free(result);
+							}
+
 							return 0;
 						}
 						else
@@ -363,7 +375,6 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						printf("There is currently no object with the identifier '%s'.\n", identifier);
 						return 0;
 					}
-					return ostack->objects[object_index].value;
 				}
 			}
 		}
@@ -373,6 +384,11 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 			&& strcmp((*token)->value, "=")
 			&& strcmp((*token)->value, ";"))
 		{
+			if(!strcmp((*token)->value, "("))
+				parentheses++;
+			else if(!strcmp((*token)->value, ")"))
+				parentheses--;
+
 			if(operators->size)
 			{
 				if(Priority((*token)->value) <= Priority(operators->data[operators->size - 1]))
@@ -396,7 +412,10 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						Push(expressions, result);
 						free(result);
 					}
-								
+					if(!strcmp((*token)->value, ")"))
+					{
+
+					}
 					Push(operators, (*token)->value);
 				}
 				else if(!strcmp((*token)->value, ")"))
@@ -420,10 +439,24 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						Push(expressions, result);
 						free(result);
 					}
-					if(!operators->size)
+					if(!operators->size && parentheses > 0)
 					{
 						printf("mismatched parentheses\n");
 						break;
+					}
+					else if(!operators->size && parentheses < 0) // function call
+					{
+						if(expressions->size == 1)
+					{
+						char* result; // malloc
+						Pop(expressions, &result);
+						return result;
+					}
+					else if(expressions->size > 1)
+					{
+						printf("could not evaluate expression\n");
+						return 0;
+					}
 					}
 					if(!strcmp(operators->data[operators->size - 1], "("))
 					{
@@ -438,7 +471,23 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 					Push(operators, (*token)->value);
 			}
 			else
+			{
+				if(parentheses < 0) // end of function call
+				{
+					if(expressions->size == 1)
+					{
+						char* result; // malloc
+						Pop(expressions, &result);
+						return result;
+					}
+					else if(expressions->size > 1)
+					{
+						printf("could not evaluate expression\n");
+						return 0;
+					}
+				}
 				Push(operators, (*token)->value);
+			}
 		}
 		else if(!strcmp((*token)->value, ";"))
 		{
@@ -461,11 +510,13 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 				Push(expressions, result);
 				free(result);
 			}
+
 			PopAll(operators);
+
 			if(expressions->size > 1)
 			{
 				PopAll(expressions);
-				printf("could not evalute all expressions\n");
+				printf("could not evaluate all expressions\n");
 				return 0;
 			}
 			else if(expressions->size == 1)
@@ -578,4 +629,9 @@ void PrintObjects(ostack_t* ostack)
 	for(i = 0; i < ostack->size; i++)
 		printf("  identifier: %s, type: %s, value: %s\n", 
 			ostack->objects[i].identifier, ostack->objects[i].type, ostack->objects[i].value);
+}
+
+void FunctionCall(ostack_t* ostack, stack_t* expressions, stack_t* operators)
+{
+
 }
