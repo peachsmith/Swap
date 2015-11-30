@@ -61,8 +61,6 @@ int main(int argc,char** argv)
 			}
 			while(strcmp(token_stream.next->value, "end of stream"));
 
-			printf("\n");
-
 			// expression evaluating nonsense
 			if(!token_stream.syntax_error)
 			{

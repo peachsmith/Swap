@@ -49,7 +49,18 @@ void Factor(tstream_t* stream)
 {
 	if(Accept("identifier", stream))
 	{
-
+		if(Accept("(", stream))
+		{
+			if(Accept(")", stream))
+			{
+				// empty parentheses
+			}
+			else
+			{
+				Expression(stream);
+				Expect(")", stream);
+			}
+		}
 	}
 	else if(Accept("number", stream))
 	{
@@ -275,7 +286,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 					{
 						CreateObject(ostack, identifier, "null", "null");
 					}	
-					else if(!strcmp((*token + 1)->value, "="))
+					else if(!strcmp((*token + 1)->value, "=")) // assignment
 					{
 						(*token)++;
 						if(strcmp((*token + 1)->value, "end of stream") && strcmp((*token + 1)->value, ";"))
@@ -312,6 +323,20 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 							return 0;
 						}
 					}
+					else if(!strcmp((*token + 1)->value, "(")) // function call
+					{
+						if(!strcmp((*token)->value, "write"))
+						{
+							(*token)++;
+							printf("%s\n", Evaluate(token, expressions, operators, ostack));
+							return 0;
+						}
+						else
+						{
+							printf("invalid identifier '%s'\n", identifier);
+							return 0;
+						}
+					}
 					else
 					{
 						int object_index = Exists(ostack, identifier);
@@ -321,7 +346,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						}
 						else
 						{
-							printf("There is currently no object with the identifier '%s'.\n", identifier);
+							printf("invalid identifier '%s'.\n", identifier);
 							return 0;
 						}
 					}	
@@ -338,6 +363,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						printf("There is currently no object with the identifier '%s'.\n", identifier);
 						return 0;
 					}
+					return ostack->objects[object_index].value;
 				}
 			}
 		}
@@ -468,7 +494,6 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 		char* result = Evaluate(&token, expressions, operators, &ostack);
 		if(result)
 		{
-			printf("result: %s\n", result);
 			free(result);
 		}
 		else
@@ -528,8 +553,6 @@ int CreateObject(ostack_t* ostack, char* identifier, char* type, char* value)
 
 		ostack->size++;
 
-		printf("created an object: %s \n%d existing object(s):\n", identifier, ostack->size);
-		PrintObjects(ostack);
 	}
 	else
 	{

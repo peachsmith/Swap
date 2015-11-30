@@ -3,3 +3,5 @@ y = (1 + 4) * 5 - 10 / 2;
 z = x - y + 100;
 
 words = "Hello, World!";
+
+write(words);
