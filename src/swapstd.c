@@ -18,7 +18,7 @@ void write(const char* output)
 		for(i = 1; i < output_size - 2; i++)
 			unquoted[i - 1] = output[i];
 
-		unquoted[i] = '\0';
+		unquoted[i - 1] = '\0';
 
 		printf("%s\n", unquoted);
 
