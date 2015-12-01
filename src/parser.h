@@ -10,6 +10,7 @@ typedef struct TokenStream
 	int syntax_error;
 } tstream_t;
 
+
 typedef struct Stack
 {
 	char** data;
@@ -31,6 +32,13 @@ typedef struct ObjectStack
 	int capacity;
 } ostack_t;
 
+typedef struct StatementQueue
+{
+	token_t** data;
+	int capacity;
+	int size;
+} squeue_t;
+
 void NextToken(tstream_t* stream);
 int Accept(const char* expected, tstream_t* stream);
 int Expect(const char* expected, tstream_t* stream);
@@ -51,6 +59,8 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators);
 int CreateObject(ostack_t* ostack, char* identifier, char* type, char* value);
 int Exists(ostack_t* ostack, char* identifier);
 void PrintObjects(ostack_t* ostack);
-void FunctionCall(ostack_t* ostack, stack_t* expressions, stack_t* operators);
+
+void AddStatement(squeue_t* squeue, token_t* statement);
+void Resize(squeue_t** squeue);
 
 #endif

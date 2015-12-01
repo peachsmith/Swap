@@ -379,7 +379,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 					}
 					else
 					{
-						printf("There is currently no object with the identifier '%s'.\n", identifier);
+						printf("invalid identifier '%s'.\n", identifier);
 						return 0;
 					}
 				}
@@ -552,20 +552,40 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 	ostack.capacity = 10;
 	ostack.objects = malloc(sizeof(object_t) * 10);
 
+	squeue_t squeue;
+	squeue.size = 0;
+	squeue.capacity = 10;
+	squeue.data = malloc(sizeof(token_t*) * squeue.capacity);
+
+	int i;
+	int j;
 	while(strcmp(token->value, "end of stream"))
 	{
-		char* result = Evaluate(&token, expressions, operators, &ostack);
-		if(result)
-		{
-			free(result);
-		}
-		else
-		{
-			break;
-		}
+		// char* result = Evaluate(&token, expressions, operators, &ostack);
+		// if(result)
+		// {
+		// 	free(result);
+		// }
+		// else
+		// {
+		// 	break;
+		// }
+
+		int statement_size = 0;
+		token_t* statement = malloc(sizeof(token_t) * 10);
+
+		
+		
+		token++;
 	}
+
+	for(i = 0; i < squeue.size; i++)
+	{
+		free(squeue.data[i]);
+	}
+
+	free(squeue.data);
 	
-	int i;
 	for(i = 0; i < ostack.size; i++)
 	{
 		free(ostack.objects[i].identifier);
@@ -643,7 +663,24 @@ void PrintObjects(ostack_t* ostack)
 			ostack->objects[i].identifier, ostack->objects[i].type, ostack->objects[i].value);
 }
 
-void FunctionCall(ostack_t* ostack, stack_t* expressions, stack_t* operators)
+void AddStatement(squeue_t* squeue, token_t* statement)
 {
+	if(squeue->size == squeue->capacity)
+		Resize(&squeue);
 
+	squeue->data[squeue->size++] = statement;
+}
+
+void Resize(squeue_t** squeue)
+{
+	token_t** new_data = malloc(sizeof(token_t*) * ((*squeue)->capacity + (*squeue)->capacity / 2));
+
+	int i;
+	for(i = 0; i < (*squeue)->size; i++)
+	{
+		new_data[i] = (*squeue)->data[i];
+	}
+
+	free((*squeue)->data);
+	(*squeue)->data = new_data;
 }
