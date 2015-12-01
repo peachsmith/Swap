@@ -333,6 +333,11 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						{
 							(*token)++;
 							(*token)++;
+							if(!strcmp((*token)->value, ")"))
+							{
+								printf("too few arguments\n");
+								return 0;
+							}
 							char* result;
 							result = Evaluate(token, expressions, operators, ostack);
 
@@ -485,6 +490,11 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 					else if(expressions->size > 1)
 					{
 						printf("could not evaluate expression\n");
+						return 0;
+					}
+					else if(!expressions->size)
+					{
+						printf("mismatched parentheses\n");
 						return 0;
 					}
 				}
