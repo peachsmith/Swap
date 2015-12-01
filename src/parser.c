@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "swapstd.h"
 
 void NextToken(tstream_t* stream)
 {
@@ -337,11 +338,12 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 
 							if(result)
 							{
-								printf("%s\n", result);
-								free(result);
+								write(result);
+								(*token)++;
+								return result;
 							}
-
-							return 0;
+							else
+								return 0;
 						}
 						else
 						{
@@ -552,7 +554,7 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 			break;
 		}
 	}
-
+	
 	int i;
 	for(i = 0; i < ostack.size; i++)
 	{
