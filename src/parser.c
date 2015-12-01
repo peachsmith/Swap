@@ -596,17 +596,17 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 			token++;
 		}
 
-		for(i = 0; i < size; i++)
-			printf("%s", statement[i].value);
-		printf("\n");
-
-		free(statement);
+		AddStatement(&squeue, statement);
 
 		token++;
 	}
 
 	for(i = 0; i < squeue.size; i++)
 	{
+		int j = 0;
+		while(strcmp(squeue.data[i][j].value, ";"))
+			printf("%s", squeue.data[i][j++].value);
+		printf("\n");
 		free(squeue.data[i]);
 	}
 
