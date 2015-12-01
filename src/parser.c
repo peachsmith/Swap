@@ -571,11 +571,37 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 		// 	break;
 		// }
 
-		int statement_size = 0;
-		token_t* statement = malloc(sizeof(token_t) * 10);
+		int size = 0;
+		int capacity = 10;
+		token_t* statement = malloc(sizeof(token_t) * capacity);
 
-		
-		
+		while(strcmp(token->value, "end of stream"))
+		{
+			if(size == capacity)
+			{
+				int i;
+				token_t* resized_statement = malloc(sizeof(token_t) * (capacity + capacity / 2));
+				for(i = 0; i < size; i++)
+					resized_statement[i] = statement[i];
+				free(statement);
+				statement = resized_statement;
+			}
+
+			statement[size++] = *token;
+
+			if(!strcmp(token->value, ";"))
+			{
+				break;
+			}
+			token++;
+		}
+
+		for(i = 0; i < size; i++)
+			printf("%s", statement[i].value);
+		printf("\n");
+
+		free(statement);
+
 		token++;
 	}
 
@@ -683,4 +709,5 @@ void Resize(squeue_t** squeue)
 
 	free((*squeue)->data);
 	(*squeue)->data = new_data;
+	(*squeue)->capacity = (*squeue)->capacity + (*squeue)->capacity / 2;
 }
