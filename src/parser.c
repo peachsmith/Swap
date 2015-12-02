@@ -574,7 +574,7 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 	ostack_t ostack;
 	ostack.size = 0;
 	ostack.capacity = 10;
-	ostack.objects = malloc(sizeof(object_t) * 10);
+	ostack.objects = malloc(sizeof(object_t) * ostack.capacity);
 
 	// create the write function
 	CreateObject(&ostack, "write", "native function", "null");
@@ -684,10 +684,9 @@ int CreateObject(ostack_t* ostack, char* identifier, char* type, char* value)
 
 	if(ostack->size >= ostack->capacity)
 	{
-		printf("cannot create any more objects. %d objects already exist.\n", ostack->size);
-		return 0;
+		ResizeObjectStack(&ostack);
 	}
-	else if(Exists(ostack, identifier) == -1)
+	if(Exists(ostack, identifier) == -1)
 	{
 		ostack->objects[ostack->size].identifier = malloc(sizeof(char) * identifier_size);
 		ostack->objects[ostack->size].type = malloc(sizeof(char) * type_size);
@@ -710,6 +709,21 @@ int CreateObject(ostack_t* ostack, char* identifier, char* type, char* value)
 		printf("object %s already exists.\n", identifier);
 		return 0;
 	}
+}
+
+void ResizeObjectStack(ostack_t** ostack)
+{
+	object_t* new_objects = malloc(sizeof(object_t) * ((*ostack)->capacity + (*ostack)->capacity / 2));
+
+	int i;
+	for(i = 0; i < (*ostack)->size; i++)
+	{
+		new_objects[i] = (*ostack)->objects[i];
+	}
+
+	free((*ostack)->objects);
+	(*ostack)->objects = new_objects;
+	(*ostack)->capacity = (*ostack)->capacity + (*ostack)->capacity / 2;
 }
 
 int Exists(ostack_t* ostack, char* identifier)

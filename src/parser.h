@@ -35,8 +35,8 @@ typedef struct Object
 typedef struct ObjectStack
 {
 	object_t* objects;
-	int size;
 	int capacity;
+	int size;
 } ostack_t;
 
 void NextToken(tstream_t* stream);
@@ -57,6 +57,7 @@ void EvaluateBinaryOperation(char** opr, char** l_operand, char** r_operand, cha
 char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack_t* ostack);
 void Interpret(token_t* token, stack_t* expressions, stack_t* operators);
 int CreateObject(ostack_t* ostack, char* identifier, char* type, char* value);
+void ResizeObjectStack(ostack_t** ostack);
 int Exists(ostack_t* ostack, char* identifier);
 void PrintObjects(ostack_t* ostack);
 

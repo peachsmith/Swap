@@ -78,8 +78,6 @@ int main(int argc,char** argv)
 				token_stream.next = &tokens[0];
 				Interpret(token_stream.next, &exp_stack, &opr_stack);
 
-				printf("done\n");
-
 				//free the memory from the stacks
 				free(opr_stack.data);
 				free(exp_stack.data);

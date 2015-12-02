@@ -1,6 +1,13 @@
 x = 1 + 4 * 5 - 10 / 2;
 y = (1 + 4) * 5 - 10 / 2;
 z = x - y + 100;
+a = 4;
+b = 16;
+c = 40;
+d = 32;
+e = 12;
+f = 2;
+g = 5;
 
 words = "It was the best of limes, it was the worst of limes.";
 
