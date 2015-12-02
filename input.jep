@@ -8,7 +8,7 @@ write(x);
 write(y);
 write(z);
 write(x + y + z);
-write(shlorp);
+#write(shlorp);                 # undefined identifier
 write("These are some words.");
 write(words);
 

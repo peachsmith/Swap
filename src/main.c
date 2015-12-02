@@ -77,8 +77,6 @@ int main(int argc,char** argv)
 
 				// point the token stream at the first token
 				token_stream.next = &tokens[0];
-
-				printf("semantic validation\n");
 				Interpret(token_stream.next, &exp_stack, &opr_stack);
 
 				printf("done\n");

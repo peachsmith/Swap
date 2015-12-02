@@ -329,31 +329,35 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 					}
 					else if(!strcmp((*token + 1)->value, "(")) // function call
 					{
-						if(!strcmp((*token)->value, "write"))
+						int func_index = Exists(ostack, (*token)->value);
+						if(func_index == -1)
 						{
-							(*token)++;
-							(*token)++;
-							if(!strcmp((*token)->value, ")"))
-							{
-								printf("too few arguments\n");
-								return 0;
-							}
-							char* result;
-							result = Evaluate(token, expressions, operators, ostack);
-
-							if(result)
-							{
-								write(result);
-								(*token)++;
-								return result;
-							}
-							else
-								return 0;
-						}
-						else
-						{
-							printf("invalid identifier '%s'\n", identifier);
+							printf("undefined identifier '%s'\n", (*token)->value);
 							return 0;
+						}
+						else if(!strcmp(ostack->objects[func_index].type, "native function"))
+						{
+							if(!strcmp(ostack->objects[func_index].identifier, "write"))
+							{
+								(*token)++;
+								(*token)++;
+								if(!strcmp((*token)->value, ")"))
+								{
+									printf("too few arguments\n");
+									return 0;
+								}
+								char* result;
+								result = Evaluate(token, expressions, operators, ostack);
+								
+								if(result)
+								{
+									//write(result);
+									(*token)++;
+									return result;
+								}
+								else
+									return 0;
+							}
 						}
 					}
 					else
@@ -365,7 +369,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						}
 						else
 						{
-							printf("invalid identifier '%s'.\n", identifier);
+							printf("undefined identifier '%s'.\n", identifier);
 							return 0;
 						}
 					}	
@@ -379,7 +383,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 					}
 					else
 					{
-						printf("invalid identifier '%s'.\n", identifier);
+						printf("undefined identifier '%s'.\n", identifier);
 						return 0;
 					}
 				}
@@ -421,7 +425,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 					}
 					if(!strcmp((*token)->value, ")"))
 					{
-
+						// I think something was probably supposed to happen here
 					}
 					Push(operators, (*token)->value);
 				}
@@ -533,9 +537,13 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 			}
 			else if(expressions->size == 1)
 			{
-				(*token)++;
 				char* result;
 				Pop(expressions, &result);
+				return result;
+			}
+			else if(expressions->size == 0)
+			{
+				char* result = malloc(sizeof(char) * 2);
 				return result;
 			}
 		}
@@ -552,11 +560,17 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 	ostack.capacity = 10;
 	ostack.objects = malloc(sizeof(object_t) * 10);
 
+	// create the write function
+	CreateObject(&ostack, "write", "native function", "null");
+	ostack.objects[0].arg_count = 1;
+
+
 	squeue_t squeue;
 	squeue.size = 0;
 	squeue.capacity = 10;
 	squeue.data = malloc(sizeof(token_t*) * squeue.capacity);
 
+	// gather the tokens into a statement queue
 	int i;
 	int j;
 	while(strcmp(token->value, "end of stream"))
@@ -601,15 +615,27 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 		token++;
 	}
 
+	printf("semantic validation\n");
+	// check semantics
 	for(i = 0; i < squeue.size; i++)
 	{
+		printf("validating: ");
 		int j = 0;
 		while(strcmp(squeue.data[i][j].value, ";"))
 			printf("%s", squeue.data[i][j++].value);
+		printf("%s", squeue.data[i][j].value);
 		printf("\n");
-		free(squeue.data[i]);
+
+		char* result = Evaluate(&(squeue.data[i]), expressions, operators, &ostack);
+
+		if(result)
+			free(result);
+		else
+			break;
 	}
 
+	for(i = 0; i < squeue.size; i++)
+		free(squeue.data[i]);
 	free(squeue.data);
 	
 	for(i = 0; i < ostack.size; i++)

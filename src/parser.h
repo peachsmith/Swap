@@ -18,11 +18,19 @@ typedef struct Stack
 	int size;
 } stack_t;
 
+typedef struct StatementQueue
+{
+	token_t** data;
+	int capacity;
+	int size;
+} squeue_t;
+
 typedef struct Object
 {
 	char* identifier;
 	char* type;
 	char* value;
+	int arg_count;
 } object_t;
 
 typedef struct ObjectStack
@@ -31,13 +39,6 @@ typedef struct ObjectStack
 	int size;
 	int capacity;
 } ostack_t;
-
-typedef struct StatementQueue
-{
-	token_t** data;
-	int capacity;
-	int size;
-} squeue_t;
 
 void NextToken(tstream_t* stream);
 int Accept(const char* expected, tstream_t* stream);
