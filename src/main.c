@@ -52,7 +52,6 @@ int main(int argc,char** argv)
 		{
 			/* get the first token */
 			token_stream.next = &tokens[0];
-			token_stream.indent = 0;
 			token_stream.syntax_error = 0;
 
 			printf("syntactic validation\n");

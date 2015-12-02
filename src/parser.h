@@ -6,7 +6,6 @@
 typedef struct TokenStream
 {
 	token_t* next;
-	int indent;
 	int syntax_error;
 } tstream_t;
 

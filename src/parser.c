@@ -102,16 +102,18 @@ void Expression(tstream_t* stream)
 	while(Accept("+", stream) || Accept("-", stream))
 		Term(stream);
 
-	/* assignment */
+	// this stuff
 	if(Accept("=", stream) || Accept("==", stream) || Accept("!=", stream)
 		|| Accept("<", stream) || Accept(">", stream) || Accept("<=", stream)
 		|| Accept(">=", stream))
+		Expression(stream);
+
+	if(Accept(",", stream))
 		Expression(stream);
 }
 
 void Statement(tstream_t* stream)
 {
-	stream->indent += 2;
 	if(Accept(";",stream))
 	{
 		
@@ -128,7 +130,6 @@ void Statement(tstream_t* stream)
 		Expression(stream);
 		Expect(";",stream);
 	}
-	stream->indent -= 2;
 }
 
 void Block(tstream_t* stream)
@@ -337,26 +338,40 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						}
 						else if(!strcmp(ostack->objects[func_index].type, "native function"))
 						{
-							if(!strcmp(ostack->objects[func_index].identifier, "write"))
+							(*token)++;
+							(*token)++;
+
+							int arg_count = 0;
+							token_t* loc = *token;
+							while(strcmp((*token)->value, ")"))
 							{
-								(*token)++;
-								(*token)++;
-								if(!strcmp((*token)->value, ")"))
-								{
-									printf("too few arguments\n");
-									return 0;
-								}
 								char* result;
 								result = Evaluate(token, expressions, operators, ostack);
 								
 								if(result)
 								{
 									//write(result);
-									(*token)++;
-									return result;
+									//return result;
+									free(result);
+									arg_count++;
+									if(!strcmp((*token)->value, ","))
+										(*token)++;
 								}
 								else
 									return 0;
+							}
+							(*token)++;
+							if(arg_count != ostack->objects[func_index].arg_count)
+							{
+								printf("incorrect number of arguments for function %s. line %d column %d\n", 
+									ostack->objects[func_index].identifier, loc->row, loc->column);
+								printf("expected %d found %d\n", ostack->objects[func_index].arg_count, arg_count);
+								return 0;
+							}
+							else
+							{
+								char* result = malloc(sizeof(char));
+								return result;
 							}
 						}
 					}
@@ -393,7 +408,8 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 			&& strcmp((*token)->value, "{") 
 			&& strcmp((*token)->value, "}")
 			&& strcmp((*token)->value, "=")
-			&& strcmp((*token)->value, ";"))
+			&& strcmp((*token)->value, ";")
+			&& strcmp((*token)->value, ","))
 		{
 			if(!strcmp((*token)->value, "("))
 				parentheses++;
@@ -505,7 +521,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 				Push(operators, (*token)->value);
 			}
 		}
-		else if(!strcmp((*token)->value, ";"))
+		else if(!strcmp((*token)->value, ";") || !strcmp((*token)->value, ","))
 		{
 			while(operators->size > 0)
 			{

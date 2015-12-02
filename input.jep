@@ -4,11 +4,11 @@ z = x - y + 100;
 
 words = "It was the best of limes, it was the worst of limes.";
 
+#write(x, y);                  # incorrect number of arguments
+#write(shlorp);                # undefined identifier
+
 write(x);
-write(y);
-write(z);
 write(x + y + z);
-#write(shlorp);                 # undefined identifier
 write("These are some words.");
 write(words);
 
