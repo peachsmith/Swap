@@ -14,7 +14,7 @@ words = "It was the best of limes, it was the worst of limes.";
 #write(x, y);                  # incorrect number of arguments
 #write(shlorp);                # undefined identifier
 
-write(x);
+write(x + y + z + a + b + c + d + e + f + g);
 write(x + y + z);
 write("These are some words.");
 write(words);

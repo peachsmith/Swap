@@ -281,6 +281,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 		{
 			char* identifier = (*token)->value;
 			char* type;
+			token_t* loc = *token;
 			if(strcmp((*token + 1)->value, "end of stream"))
 			{
 				if(!expressions->size && !operators->size)
@@ -307,7 +308,12 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 							else
 								type = "number";
 
-							CreateObject(ostack, identifier, type, result);
+							int obj_index = Exists(ostack, identifier);
+							if(obj_index > -1)
+								ostack->objects[obj_index].value = result;
+							else
+								CreateObject(ostack, identifier, type, result);
+							
 							if(!strcmp((*token)->value,"end of stream"))
 							{
 								PopAll(expressions);
@@ -333,7 +339,8 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						int func_index = Exists(ostack, (*token)->value);
 						if(func_index == -1)
 						{
-							printf("undefined identifier '%s'\n", (*token)->value);
+							printf("undefined identifier '%s' line %d, column %d\n", loc->value,
+								loc->row, loc->column);
 							return 0;
 						}
 						else if(!strcmp(ostack->objects[func_index].type, "native function"))
@@ -342,7 +349,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 							(*token)++;
 
 							int arg_count = 0;
-							token_t* loc = *token;
+							
 							while(strcmp((*token)->value, ")"))
 							{
 								char* result;
@@ -384,7 +391,8 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						}
 						else
 						{
-							printf("undefined identifier '%s'.\n", identifier);
+							printf("undefined identifier '%s' line %d, column %d.\n", identifier, 
+								loc->row, loc->column);
 							return 0;
 						}
 					}	
@@ -398,7 +406,8 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 					}
 					else
 					{
-						printf("undefined identifier '%s'.\n", identifier);
+						printf("undefined identifier '%s' line %d column %d.\n", identifier,
+							loc->row, loc->column);
 						return 0;
 					}
 				}
@@ -587,6 +596,7 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 	squeue.data = malloc(sizeof(token_t*) * squeue.capacity);
 
 	// gather the tokens into a statement queue
+	printf("populating statement queue\n");
 	int i;
 	int j;
 	while(strcmp(token->value, "end of stream"))
@@ -604,7 +614,6 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 		int size = 0;
 		int capacity = 10;
 		token_t* statement = malloc(sizeof(token_t) * capacity);
-
 		while(strcmp(token->value, "end of stream"))
 		{
 			if(size == capacity)
@@ -615,6 +624,7 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 					resized_statement[i] = statement[i];
 				free(statement);
 				statement = resized_statement;
+				capacity = capacity + capacity / 2;
 			}
 
 			statement[size++] = *token;
