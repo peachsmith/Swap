@@ -652,7 +652,9 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 		printf("%s", squeue.data[i][j].value);
 		printf("\n");
 
+		token_t* statement_start = squeue.data[i];
 		char* result = Evaluate(&(squeue.data[i]), expressions, operators, &ostack);
+		squeue.data[i] = statement_start;
 
 		if(result)
 			free(result);
