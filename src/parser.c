@@ -845,7 +845,7 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 		// printf("\n");
 
 		token_t* statement_start = squeue.data[i];
-		char* result = Evaluate(&(squeue.data[i]), expressions, operators, &ostack);
+		char* result = ValidateSemantics(&(squeue.data[i]), expressions, operators, &ostack);
 		squeue.data[i] = statement_start;
 
 		if(result)
@@ -856,6 +856,43 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 			break;
 		}
 	}
+
+	if(expressions->size)
+		PopAll(expressions);
+
+	if(operators->size)
+		PopAll(operators);
+
+	if(!error)
+	{
+		for(i = predefined; i < ostack.size; i++)
+		{
+			free(ostack.objects[i].identifier);
+			free(ostack.objects[i].type);
+			free(ostack.objects[i].value);
+		}
+
+		ostack.size = predefined;
+
+		for(i = 0; i < squeue.size; i++)
+		{
+	
+			token_t* statement_start = squeue.data[i];
+			char* result = Evaluate(&(squeue.data[i]), expressions, operators, &ostack);
+			squeue.data[i] = statement_start;
+	
+			if(result)
+				free(result);
+			else
+				break;
+		}
+	}
+
+	if(expressions->size)
+		PopAll(expressions);
+
+	if(operators->size)
+		PopAll(operators);
 
 	for(i = 0; i < squeue.size; i++)
 		free(squeue.data[i]);
