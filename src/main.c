@@ -54,7 +54,6 @@ int main(int argc,char** argv)
 			token_stream.next = &tokens[0];
 			token_stream.syntax_error = 0;
 
-			printf("syntactic validation\n");
 			do
 			{
 				Block(&token_stream);
@@ -77,8 +76,6 @@ int main(int argc,char** argv)
 				// point the token stream at the first token
 				token_stream.next = &tokens[0];
 				Interpret(token_stream.next, &exp_stack, &opr_stack);
-
-				printf("done\n");
 
 				//free the memory from the stacks
 				free(opr_stack.data);

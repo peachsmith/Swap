@@ -288,7 +288,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 				{
 					if(!strcmp((*token + 1)->value, ";")) // declaration
 					{
-						CreateObject(ostack, identifier, "null", "null");
+						CreateObject(ostack, identifier, "null", "null", 0);
 					}	
 					else if(!strcmp((*token + 1)->value, "=")) // assignment
 					{
@@ -312,7 +312,7 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 							if(obj_index > -1)
 								ostack->objects[obj_index].value = result;
 							else
-								CreateObject(ostack, identifier, type, result);
+								CreateObject(ostack, identifier, type, result, 0);
 							
 							if(!strcmp((*token)->value,"end of stream"))
 							{
@@ -347,9 +347,11 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 						{
 							(*token)++;
 							(*token)++;
-
-							int arg_count = 0;
 							
+							int i;
+							int size = 0;
+							int capacity = 5;
+							char** args = malloc(sizeof(char*) * capacity);
 							while(strcmp((*token)->value, ")"))
 							{
 								char* result;
@@ -359,27 +361,53 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 								{
 									//write(result);
 									//return result;
-									free(result);
-									arg_count++;
+									//free(result);
+									if(size == capacity)
+									{
+										capacity = capacity + capacity / 2;
+										char** new_args = malloc(sizeof(char*) * capacity);
+										for(i = 0; i < size; i++)
+											new_args[i] = args[i];
+										free(args);
+										args = new_args;
+									}
+									args[size++] = result;
+
 									if(!strcmp((*token)->value, ","))
 										(*token)++;
 								}
 								else
+								{
+									for(i = 0; i < size; i++)
+										free(args[i]);
+									free(args);
 									return 0;
+								}
 							}
 							(*token)++;
-							if(arg_count != ostack->objects[func_index].arg_count)
+							if(size != ostack->objects[func_index].arg_count)
 							{
 								printf("incorrect number of arguments for function %s. line %d column %d\n", 
 									ostack->objects[func_index].identifier, loc->row, loc->column);
-								printf("expected %d found %d\n", ostack->objects[func_index].arg_count, arg_count);
+								printf("expected %d found %d\n", ostack->objects[func_index].arg_count, size);
+								for(i = 0; i < size; i++)
+									free(args[i]);
+								free(args);
 								return 0;
 							}
 							else
 							{
+								NativeFunctionCall(ostack->objects[func_index].identifier, args);
+								for(i = 0; i < size; i++)
+									free(args[i]);
+								free(args);
 								char* result = malloc(sizeof(char));
 								return result;
 							}
+						}
+						else if(!strcmp(ostack->objects[func_index].type, "function"))
+						{
+							// swap function call
 						}
 					}
 					else
@@ -578,6 +606,180 @@ char* Evaluate(token_t** token, stack_t* expressions, stack_t* operators, ostack
 	return 0;
 }
 
+char* ValidateSemantics(token_t** token, stack_t* expressions, stack_t* operators, ostack_t* ostack)
+{
+	int parentheses = 0;
+	while(strcmp((*token)->value, "end of stream"))
+	{
+		if(!strcmp((*token)->type, "number") || !strcmp((*token)->type, "string"))
+		{
+			Push(expressions, (*token)->value);
+		}
+		else if(!strcmp((*token)->type, "identifier"))
+		{
+			char* identifier = (*token)->value;
+			char* type;
+			token_t* loc = *token;
+			if(strcmp((*token + 1)->value, "end of stream"))
+			{
+				if(!strcmp((*token + 1)->value, ";")) // declaration
+				{
+					CreateObject(ostack, identifier, "null", "null", 0);
+				}	
+				else if(!strcmp((*token + 1)->value, "=")) // assignment
+				{
+					(*token)++;
+					if(strcmp((*token + 1)->value, "end of stream") && strcmp((*token + 1)->value, ";"))
+						(*token)++;
+					else
+					{
+						printf("incomplete assignment. expected expression, found %s\n", (*token + 1)->value);
+						return 0;
+					}
+					char* result = ValidateSemantics(token, expressions, operators, ostack);
+					if(result)
+					{
+						if(result[0] != '\0' && result[0] == '"')
+							type = "string";
+						else
+							type = "number";
+
+						int obj_index = Exists(ostack, identifier);
+						if(obj_index > -1)
+							ostack->objects[obj_index].value = result;
+						else
+							CreateObject(ostack, identifier, type, result, 0);
+						
+						if(!strcmp((*token)->value,"end of stream"))
+						{
+							free(result);
+							PopAll(expressions);
+							PopAll(operators);
+							return 0;
+						}
+						else
+						{
+							free(result);
+							PopAll(expressions);
+							PopAll(operators);
+							continue;
+						}
+					}
+					else
+					{
+						return 0;
+					}
+				}
+				else if(!strcmp((*token + 1)->value, "(")) // function call
+				{
+					int func_index = Exists(ostack, (*token)->value);
+					if(func_index == -1)
+					{
+						printf("undefined identifier '%s' line %d, column %d\n", loc->value,
+							loc->row, loc->column);
+						return 0;
+					}
+					else if(!strcmp(ostack->objects[func_index].type, "native function"))
+					{
+						// native function call
+						
+						(*token)++;
+						(*token)++;
+
+						int arg_count = 0;
+						
+						// validate the arguments
+						while(strcmp((*token)->value, ")"))
+						{
+							char* result;
+							result = ValidateSemantics(token, expressions, operators, ostack);
+							
+							if(result)
+							{
+								free(result);
+								arg_count++;
+								if(!strcmp((*token)->value, ","))
+									(*token)++;
+							}
+							else
+								return 0;
+						}
+						(*token)++;
+						if(arg_count != ostack->objects[func_index].arg_count)
+						{
+							printf("incorrect number of arguments for function %s. line %d column %d\n", 
+								ostack->objects[func_index].identifier, loc->row, loc->column);
+							printf("expected %d found %d\n", ostack->objects[func_index].arg_count, arg_count);
+							return 0;
+						}
+						else
+						{
+							char* result = malloc(sizeof(char));
+							return result;
+						}
+					}
+					else if(!strcmp(ostack->objects[func_index].type, "function"))
+					{
+						// swap function call
+					}
+				}
+				else
+				{
+					int object_index = Exists(ostack, identifier);
+					if(object_index > -1)
+					{
+						Push(expressions, ostack->objects[object_index].value);
+					}
+					else
+					{
+						printf("undefined identifier '%s' line %d, column %d.\n", identifier, 
+							loc->row, loc->column);
+						return 0;
+					}
+				}
+			}
+			else
+			{
+				printf("end of stream\n");
+			}
+		}
+		else if(!strcmp((*token)->type, "symbol")
+			&& strcmp((*token)->value, "{") 
+			&& strcmp((*token)->value, "}")
+			&& strcmp((*token)->value, "=")
+			&& strcmp((*token)->value, ";")
+			&& strcmp((*token)->value, ","))
+		{
+			if(!strcmp((*token)->value, "("))
+				parentheses++;
+			else if(!strcmp((*token)->value, ")"))
+				parentheses--;
+
+			if(parentheses < 0) // end of function call
+			{
+				char* result = malloc(sizeof(char) * 2); // malloc
+				return result;
+			}
+			Push(operators, (*token)->value);
+		}
+		else if(!strcmp((*token)->value, ";") || !strcmp((*token)->value, ","))
+		{
+
+			if(operators->size >= 1)
+				PopAll(operators);
+
+			if(expressions->size >= 1)
+				PopAll(expressions);
+
+			char* result = malloc(sizeof(char) * 2);
+			return result;
+		}
+		(*token)++;
+	}
+	
+	return 0;
+}
+
 void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 {	
 	ostack_t ostack;
@@ -585,10 +787,11 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 	ostack.capacity = 10;
 	ostack.objects = malloc(sizeof(object_t) * ostack.capacity);
 
-	// create the write function
-	CreateObject(&ostack, "write", "native function", "null");
-	ostack.objects[0].arg_count = 1;
+	// create the native function(s)
+	CreateObject(&ostack, "write", "native function", "null", 1);
 
+	// the amount of predefined functions
+	int predefined = 1;
 
 	squeue_t squeue;
 	squeue.size = 0;
@@ -596,21 +799,11 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 	squeue.data = malloc(sizeof(token_t*) * squeue.capacity);
 
 	// gather the tokens into a statement queue
-	printf("populating statement queue\n");
 	int i;
 	int j;
+	int error = 0;
 	while(strcmp(token->value, "end of stream"))
 	{
-		// char* result = Evaluate(&token, expressions, operators, &ostack);
-		// if(result)
-		// {
-		// 	free(result);
-		// }
-		// else
-		// {
-		// 	break;
-		// }
-
 		int size = 0;
 		int capacity = 10;
 		token_t* statement = malloc(sizeof(token_t) * capacity);
@@ -641,16 +834,15 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 		token++;
 	}
 
-	printf("semantic validation\n");
 	// check semantics
 	for(i = 0; i < squeue.size; i++)
 	{
-		printf("validating: ");
-		int j = 0;
-		while(strcmp(squeue.data[i][j].value, ";"))
-			printf("%s", squeue.data[i][j++].value);
-		printf("%s", squeue.data[i][j].value);
-		printf("\n");
+		// printf("validating: ");
+		// int j = 0;
+		// while(strcmp(squeue.data[i][j].value, ";"))
+		// 	printf("%s", squeue.data[i][j++].value);
+		// printf("%s", squeue.data[i][j].value);
+		// printf("\n");
 
 		token_t* statement_start = squeue.data[i];
 		char* result = Evaluate(&(squeue.data[i]), expressions, operators, &ostack);
@@ -659,7 +851,10 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 		if(result)
 			free(result);
 		else
+		{
+			error = 1;
 			break;
+		}
 	}
 
 	for(i = 0; i < squeue.size; i++)
@@ -675,7 +870,7 @@ void Interpret(token_t* token, stack_t* expressions, stack_t* operators)
 	free(ostack.objects);
 }
 
-int CreateObject(ostack_t* ostack, char* identifier, char* type, char* value)
+int CreateObject(ostack_t* ostack, char* identifier, char* type, char* value, int arg_count)
 {
 	int i;
 	int identifier_size = 0;
@@ -703,6 +898,7 @@ int CreateObject(ostack_t* ostack, char* identifier, char* type, char* value)
 		ostack->objects[ostack->size].identifier = malloc(sizeof(char) * identifier_size);
 		ostack->objects[ostack->size].type = malloc(sizeof(char) * type_size);
 		ostack->objects[ostack->size].value = malloc(sizeof(char) * value_size);
+		ostack->objects[ostack->size].arg_count = arg_count;
 
 		for(i = 0; i < identifier_size; i++)
 			ostack->objects[ostack->size].identifier[i] = identifier[i];
@@ -778,4 +974,13 @@ void Resize(squeue_t** squeue)
 	free((*squeue)->data);
 	(*squeue)->data = new_data;
 	(*squeue)->capacity = (*squeue)->capacity + (*squeue)->capacity / 2;
+}
+
+void NativeFunctionCall(const char* function_name, char** args)
+{
+	if(!strcmp(function_name, "write"))
+	{
+		// the write function
+		write(args[0]);
+	}
 }
