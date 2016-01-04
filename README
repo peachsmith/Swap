@@ -1,5 +1,7 @@
 SWaP: Solution Without a Problem
 
 A basic parser for a custom language.
-Scanner and Lexer functionality are complete.
-Parsing is currently under development.
+
+Current capabilities:
+	Basic integer arithmetic and standard output.
+
