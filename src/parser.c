@@ -230,17 +230,56 @@ void EvaluateBinaryOperation(char** opr,  char** l_operand, char** r_operand, ch
 	char result_buffer[30];
 	int l_op;
 	int r_op; 
+	int l_size;
+	int r_size;
 	sscanf(*l_operand, "%d", &l_op);
 	sscanf(*r_operand, "%d", &r_op);
 	int i = 0;
 
 	if(!strcmp(*opr, "+"))
 	{
-		sprintf(result_buffer, "%d", l_op + r_op);
-		*result = malloc(sizeof(char) * 30);
-		while(result_buffer[i] != '\0')
-			(*result)[i] = result_buffer[i++];
-		(*result)[i] = result_buffer[i];
+		if(*l_operand[0] == '"' || *r_operand[0] == '"')
+		{
+			// string concatenation
+			l_size = length(*l_operand);			
+			r_size = length(*r_operand);
+			int concat_size = l_size + r_size;
+			*result = malloc(sizeof(char) * (concat_size + sizeof(char) * 4));
+
+			(*result)[0] = '"';
+
+			for(i = 0; i < l_size - 2; i++)
+			{
+				if(i == 0 && (*l_operand)[i] == '"')
+					continue;
+				else if(i == l_size - 2 && (*l_operand)[i] == '"')
+					continue;
+				else
+					(*result)[i] = (*l_operand)[i];
+			}
+			for(i = l_size - 1; i < l_size + r_size - 1; i++)
+			{
+				if(i - l_size + 1 == 0 && (*r_operand)[i - l_size + 1] == '"')
+					continue;
+				else if(i - l_size + 1 == r_size - 2 && (*r_operand)[i - l_size + 1] == '"')
+					continue;
+				else
+					(*result)[i - 1] = (*r_operand)[i - l_size + 1];
+			}
+			(*result)[concat_size - 3] = '"';
+			(*result)[concat_size - 2] = '\0';
+			printf("concatenation result: %s\n", *result);
+		}
+		else
+		{
+			//printf("encountered addition\n");
+			//printf("attempting to add %s with %s\n", *l_operand, *r_operand);
+			sprintf(result_buffer, "%d", l_op + r_op);
+			*result = malloc(sizeof(char) * 30);
+			while(result_buffer[i] != '\0')
+				(*result)[i] = result_buffer[i++];
+			(*result)[i] = result_buffer[i];
+		}
 	}
 	else if(!strcmp(*opr, "-"))
 	{
@@ -1020,4 +1059,14 @@ void NativeFunctionCall(const char* function_name, char** args)
 		// the write function
 		write(args[0]);
 	}
+}
+
+int length(const char* str)
+{
+	int i = 0;
+	while(str[i] != '\0')
+		i++;
+
+	i++;
+	return i;
 }

@@ -66,5 +66,6 @@ void AddStatement(squeue_t* squeue, token_t* statement);
 void Resize(squeue_t** squeue);
 
 void NativeFunctionCall(const char* function_name, char** args);
+int length(const char* str);
 
 #endif
