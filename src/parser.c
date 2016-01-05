@@ -244,31 +244,64 @@ void EvaluateBinaryOperation(char** opr,  char** l_operand, char** r_operand, ch
 			l_size = length(*l_operand);			
 			r_size = length(*r_operand);
 			int concat_size = l_size + r_size;
-			*result = malloc(sizeof(char) * (concat_size + sizeof(char) * 4));
 
+			*result = malloc(sizeof(char) * concat_size + sizeof(char) * 4);
+			//printf("l_size: %d, r_size: %d, concat_size: %d\n", l_size, r_size, concat_size);
+
+			// add the opening quotes
 			(*result)[0] = '"';
 
-			for(i = 0; i < l_size - 2; i++)
+			//int quote_index = 0;
+
+			for(i = 0; i < l_size - 1; i++)
 			{
 				if(i == 0 && (*l_operand)[i] == '"')
+				{
+					//quote_index++;
 					continue;
+				}
 				else if(i == l_size - 2 && (*l_operand)[i] == '"')
-					continue;
+				{
+					break;
+				}
 				else
+				{
+					//printf("i: %d, (*l_operand)[i]: %c\n", i, (*l_operand)[i]);
 					(*result)[i] = (*l_operand)[i];
+				}
 			}
-			for(i = l_size - 1; i < l_size + r_size - 1; i++)
+			
+			//printf("i = %d\n", i);
+			
+			int quote_index = 0;
+
+			for(; i < l_size + r_size - 1; i++)
 			{
-				if(i - l_size + 1 == 0 && (*r_operand)[i - l_size + 1] == '"')
+				//printf("i: %d, c: %c\n", i, (*r_operand)[i - l_size]);
+				if((i - l_size == 0) && (*r_operand)[i - l_size] == '"')
+				{
+					quote_index++;
 					continue;
-				else if(i - l_size + 1 == r_size - 2 && (*r_operand)[i - l_size + 1] == '"')
-					continue;
+				}
+				else if((i - l_size == r_size - 2) && (*r_operand)[i - l_size] == '"')
+				{
+					break;
+				}
+				else if(i - l_size >= 0)
+				{
+					//printf("i: %d, (*r_operand)[%d - %d]): %c\n", i, i, l_size, (*r_operand)[i - l_size]);
+					(*result)[i - quote_index] = (*r_operand)[i - l_size];
+				}
 				else
-					(*result)[i - 1] = (*r_operand)[i - l_size + 1];
+				{
+					quote_index++;
+				}
 			}
-			(*result)[concat_size - 3] = '"';
-			(*result)[concat_size - 2] = '\0';
-			printf("concatenation result: %s\n", *result);
+			//printf("\n----\n");
+			//printf("i = %d\n", i);
+			(*result)[i - quote_index] = '"';
+			(*result)[i - quote_index + 1] = '\0';
+			//printf("concatenation result: %s\n", *result);
 		}
 		else
 		{
