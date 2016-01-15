@@ -4,6 +4,9 @@ z = x - y + 100;
 
 words = "It was the best of limes, it was the worst of limes.";
 
+write("x = " + x);
+write("y = " + y);
+write("z = " + z);
 write("x + y + z = " + (x + y + z));
 write("These are some words." + " These are some more words.");
 write(words);
