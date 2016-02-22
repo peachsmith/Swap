@@ -2,6 +2,14 @@ SWaP: Solution Without a Problem
 
 A basic parser for a custom language.
 
-Current capabilities:
-	Basic integer arithmetic and standard output.
+Features:
+	standard output
+	basic integer arithmetic
 
+Limitations:
+	variables cannot be initialized to a negative number without an
+		expression that evaluates to something less than 0
+	no standard input
+	no floating point functionality
+	no control structures
+	no user-defined functions
