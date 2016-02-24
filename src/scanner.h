@@ -3,8 +3,7 @@
  * Author: John Powell
  *
  * Due to the way in which the program calculates file size, files
- * with a size of 2GB or larger. Realistically, you shouldn't ever have
- * a source file that's 2GB.
+ * with a size of 2GB or larger.
  */
 #ifndef JEP_SCANNER_H_
 #define JEP_SCANNER_H_
